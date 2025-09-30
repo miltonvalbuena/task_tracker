@@ -1,0 +1,86 @@
+# Multi-stage build for Railway deployment
+FROM node:18-alpine AS frontend-builder
+
+# Set working directory
+WORKDIR /app/frontend
+
+# Copy frontend package files
+COPY frontend/package*.json ./
+
+# Install frontend dependencies
+RUN npm ci --only=production
+
+# Copy frontend source code
+COPY frontend/ ./
+
+# Build frontend
+RUN npm run build
+
+# Python backend stage
+FROM python:3.11-slim AS backend
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    gcc \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy backend requirements
+COPY backend/requirements.txt ./
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy backend source code
+COPY backend/ ./
+
+# Copy built frontend
+COPY --from=frontend-builder /app/frontend/build ./static
+
+# Create startup script
+RUN echo '#!/bin/bash\n\
+# Start backend server\n\
+cd /app\n\
+uvicorn app.main:app --host 0.0.0.0 --port 8000 &\n\
+\n\
+# Start nginx to serve frontend\n\
+nginx -g "daemon off;" &\n\
+\n\
+# Wait for any process to exit\n\
+wait' > /app/start.sh && chmod +x /app/start.sh
+
+# Create nginx config
+RUN echo 'events {}\n\
+http {\n\
+    upstream backend {\n\
+        server localhost:8000;\n\
+    }\n\
+    \n\
+    server {\n\
+        listen 80;\n\
+        \n\
+        location / {\n\
+            root /app/static;\n\
+            try_files $uri $uri/ /index.html;\n\
+        }\n\
+        \n\
+        location /api/ {\n\
+            proxy_pass http://backend;\n\
+            proxy_set_header Host $host;\n\
+            proxy_set_header X-Real-IP $remote_addr;\n\
+        }\n\
+    }\n\
+}' > /etc/nginx/nginx.conf
+
+# Install nginx
+RUN apt-get update && apt-get install -y nginx && rm -rf /var/lib/apt/lists/*
+
+# Expose port
+EXPOSE 80
+
+# Start the application
+CMD ["/app/start.sh"]
+
