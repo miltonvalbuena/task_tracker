@@ -32,9 +32,11 @@ COPY . .
 WORKDIR /app/frontend
 RUN npm run build
 
+# Set working directory to backend for the application
+WORKDIR /app/backend
+
 # Expose port
 EXPOSE $PORT
 
 # Start the application
-WORKDIR /app/backend
-CMD python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
+CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "$PORT"]
