@@ -38,5 +38,18 @@ WORKDIR /app/backend
 # Expose port
 EXPOSE $PORT
 
+# Create startup script
+RUN echo '#!/bin/bash\n\
+echo "🚀 Iniciando Task Tracker..."\n\
+echo "📊 Ejecutando migraciones de base de datos..."\n\
+cd /app/backend && alembic upgrade head\n\
+echo "✅ Migraciones completadas"\n\
+echo "🔐 Creando usuario administrador..."\n\
+python scripts/init_railway.py\n\
+echo "✅ Usuario administrador creado"\n\
+echo "🌐 Iniciando servidor..."\n\
+python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT\n\
+' > /app/start.sh && chmod +x /app/start.sh
+
 # Start the application
-CMD python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT
+CMD ["/app/start.sh"]
