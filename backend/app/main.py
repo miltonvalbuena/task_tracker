@@ -70,11 +70,7 @@ if os.path.exists(frontend_path):
     
     @app.get("/{path:path}")
     def serve_frontend_routes(path: str):
-        # Si es una ruta de API, no servir el frontend
-        if path.startswith("api/"):
-            return {"error": "API endpoint not found"}
-        
-        # Para todas las demás rutas, servir el index.html del frontend
+        # Para todas las rutas que no sean API, servir el index.html del frontend
         return FileResponse(f"{frontend_path}/index.html")
 else:
     @app.get("/")
