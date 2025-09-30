@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
     curl \
+    postgresql-client \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js
@@ -44,6 +45,9 @@ echo "🚀 Iniciando Task Tracker..."\n\
 echo "📊 Creando tablas de base de datos..."\n\
 cd /app/backend && python -c "from app.database import engine; from app.models import Base; Base.metadata.create_all(bind=engine)"\n\
 echo "✅ Tablas creadas"\n\
+echo "📥 Importando datos desde dump SQL..."\n\
+python scripts/import_from_dump.py\n\
+echo "✅ Datos importados"\n\
 echo "🔐 Creando usuario administrador..."\n\
 python scripts/init_railway.py\n\
 echo "✅ Usuario administrador creado"\n\
