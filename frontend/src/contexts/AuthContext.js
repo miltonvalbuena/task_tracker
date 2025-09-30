@@ -40,21 +40,15 @@ export function AuthProvider({ children }) {
 
   const login = async (username, password) => {
     try {
-      console.log('🔐 Intentando login con:', { username, password: '***' });
-      
       const formData = new URLSearchParams();
       formData.append('username', username);
       formData.append('password', password);
-      
-      console.log('📤 Enviando datos:', formData.toString());
       
       const response = await api.post('/api/v1/token', formData, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
       });
-      
-      console.log('✅ Login exitoso:', response);
       
       const { access_token } = response;
       localStorage.setItem('token', access_token);
@@ -63,8 +57,6 @@ export function AuthProvider({ children }) {
       await fetchUser();
       return { success: true };
     } catch (error) {
-      console.error('❌ Error en login:', error);
-      console.error('❌ Error response:', error.response?.data);
       return { 
         success: false, 
         error: error.response?.data?.detail || 'Error de autenticación' 

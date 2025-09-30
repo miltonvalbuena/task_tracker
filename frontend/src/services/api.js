@@ -23,12 +23,9 @@ export const api = axios.create({
 // Interceptor para manejar errores de autenticación
 api.interceptors.response.use(
   (response) => {
-    console.log('✅ Respuesta exitosa:', response);
     return response.data;
   },
   (error) => {
-    console.log('❌ Error en interceptor:', error);
-    console.log('❌ Error response:', error.response);
     if (error.response?.status === 401) {
       // No redirigir automáticamente si estamos en la página de login
       if (!window.location.pathname.includes('/login')) {
@@ -44,16 +41,7 @@ api.interceptors.response.use(
 // Servicios para tareas
 export const taskService = {
   getAll: (params = {}) => {
-    console.log('🔍 Obteniendo tareas con params:', params);
-    return api.get('/api/v1/tasks', { params }).then(response => {
-      console.log('📋 Respuesta de tareas:', response);
-      console.log('📋 Tipo de respuesta:', typeof response);
-      console.log('📋 Es array:', Array.isArray(response));
-      if (response && typeof response === 'object' && !Array.isArray(response)) {
-        console.log('⚠️ Respuesta no es array, claves:', Object.keys(response));
-      }
-      return response;
-    });
+    return api.get('/api/v1/tasks', { params });
   },
   getById: (id) => api.get(`/api/v1/tasks/${id}`),
   create: (data) => api.post('/api/v1/tasks', data),
