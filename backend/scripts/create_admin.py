@@ -6,17 +6,14 @@ Script para crear usuario administrador en Railway
 import os
 import sys
 import time
+import bcrypt
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
-from passlib.context import CryptContext
 
 # Agregar el directorio padre al path para importar los modelos
 sys.path.append('/app/backend')
 
 from app.models import User
-
-# Configuración de contraseñas
-pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 def create_admin_user():
     """Crear usuario administrador"""
@@ -60,8 +57,9 @@ def create_admin_user():
                 db.close()
                 return True
             
-            # Crear hash de la contraseña
-            hashed_password = pwd_context.hash("admin123")
+            # Crear hash de la contraseña usando bcrypt directamente
+            salt = bcrypt.gensalt()
+            hashed_password = bcrypt.hashpw('admin123'.encode('utf-8'), salt).decode('utf-8')
             
             # Crear usuario administrador
             admin_user = User(

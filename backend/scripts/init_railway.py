@@ -7,18 +7,15 @@ Crea el usuario administrador y configura la base de datos
 import os
 import sys
 import asyncio
+import bcrypt
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from passlib.context import CryptContext
 
 # Agregar el directorio padre al path para importar los modelos
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.models import Base, User, Company
 from app.database import get_db
-
-# Configuración de contraseñas
-pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 
 def create_admin_user():
     """Crear usuario administrador"""
@@ -49,8 +46,9 @@ def create_admin_user():
                 db.close()
                 return
             
-            # Crear hash de la contraseña
-            hashed_password = pwd_context.hash(admin_password)
+            # Crear hash de la contraseña usando bcrypt directamente
+            salt = bcrypt.gensalt()
+            hashed_password = bcrypt.hashpw(admin_password.encode('utf-8'), salt).decode('utf-8')
             
             # Crear usuario administrador
             admin_user = User(
