@@ -21,13 +21,16 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy frontend package.json and install dependencies
 COPY frontend/package*.json ./frontend/
-RUN cd frontend && npm install
+WORKDIR /app/frontend
+RUN npm install
 
 # Copy all source code
+WORKDIR /app
 COPY . .
 
 # Build frontend
-RUN cd frontend && npm run build
+WORKDIR /app/frontend
+RUN npm run build
 
 # Expose port
 EXPOSE $PORT
