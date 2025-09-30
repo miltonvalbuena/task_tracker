@@ -25,9 +25,12 @@ api.interceptors.response.use(
   (response) => response.data,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      delete api.defaults.headers.common['Authorization'];
-      window.location.href = '/login';
+      // No redirigir automáticamente si estamos en la página de login
+      if (!window.location.pathname.includes('/login')) {
+        localStorage.removeItem('token');
+        delete api.defaults.headers.common['Authorization'];
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
