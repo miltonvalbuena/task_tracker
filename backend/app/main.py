@@ -21,7 +21,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Incluir routers
+# Incluir routers ANTES del catch-all route
 app.include_router(auth.router, prefix="/api/v1")
 app.include_router(companies.router, prefix="/api/v1")
 app.include_router(users.router, prefix="/api/v1")
@@ -59,7 +59,7 @@ def health_check_alt():
     """Endpoint de salud alternativo"""
     return health_check()
 
-# Montar archivos estáticos del frontend
+# Montar archivos estáticos del frontend DESPUÉS de todos los endpoints de API
 frontend_path = "/app/frontend/build"
 if os.path.exists(frontend_path):
     app.mount("/static", StaticFiles(directory=f"{frontend_path}/static"), name="static")
