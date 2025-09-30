@@ -7,7 +7,7 @@ from app.models import Task, User, Company
 from app.schemas import Task as TaskSchema, TaskCreate, TaskUpdate
 from app.auth import get_current_active_user
 
-router = APIRouter(prefix="/tasks", tags=["tasks"])
+router = APIRouter(prefix="/tasks/", tags=["tasks"])
 
 @router.post("/", response_model=TaskSchema)
 def create_task(
