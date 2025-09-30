@@ -1,6 +1,8 @@
 import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from app.routers import auth, companies, users, tasks, dashboard
 
 app = FastAPI(
@@ -26,9 +28,27 @@ app.include_router(users.router, prefix="/api/v1")
 app.include_router(tasks.router, prefix="/api/v1")
 app.include_router(dashboard.router, prefix="/api/v1")
 
-@app.get("/")
-def read_root():
-    return {"message": "Task Tracker API - Sistema de gestión de tareas"}
+# Montar archivos estáticos del frontend
+frontend_path = "/app/frontend/build"
+if os.path.exists(frontend_path):
+    app.mount("/static", StaticFiles(directory=f"{frontend_path}/static"), name="static")
+    
+    @app.get("/")
+    def serve_frontend():
+        return FileResponse(f"{frontend_path}/index.html")
+    
+    @app.get("/{path:path}")
+    def serve_frontend_routes(path: str):
+        # Si es una ruta de API, no servir el frontend
+        if path.startswith("api/"):
+            return {"error": "API endpoint not found"}
+        
+        # Para todas las demás rutas, servir el index.html del frontend
+        return FileResponse(f"{frontend_path}/index.html")
+else:
+    @app.get("/")
+    def read_root():
+        return {"message": "Task Tracker API - Sistema de gestión de tareas", "frontend": "Not built"}
 
 @app.get("/api/v1/health")
 def health_check():
