@@ -1,0 +1,12 @@
+[build]
+builder = "dockerfile"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "/app/start.sh"
+healthcheckPath = "/api/v1/health"
+healthcheckTimeout = 300
+restartPolicyType = "always"
+
+[environments.production]
+variables = { PORT = "8000" }

@@ -1,7 +1,22 @@
 import axios from 'axios';
 
+// Determinar la URL base según el entorno
+const getBaseURL = () => {
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+  
+  // En producción (Railway), usar URL relativa
+  if (process.env.NODE_ENV === 'production') {
+    return '';
+  }
+  
+  // En desarrollo, usar localhost
+  return 'http://localhost:8000';
+};
+
 export const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000',
+  baseURL: getBaseURL(),
   timeout: 10000,
 });
 

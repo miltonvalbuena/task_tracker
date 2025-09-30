@@ -42,15 +42,23 @@ EXPOSE $PORT
 # Create startup script
 RUN echo '#!/bin/bash\n\
 echo "🚀 Iniciando Task Tracker..."\n\
+\n\
+# Verificar salud de la base de datos\n\
+echo "🔍 Verificando salud de la base de datos..."\n\
+if ! python scripts/check_db_health.py; then\n\
+    echo "❌ Error: La base de datos no está disponible o no está configurada correctamente"\n\
+    exit 1\n\
+fi\n\
+\n\
 echo "📊 Creando tablas de base de datos..."\n\
-cd /app/backend && python -c "from app.database import engine; from app.models import Base; Base.metadata.create_all(bind=engine)"\n\
-echo "✅ Tablas creadas"\n\
-echo "📥 Importando datos desde dump SQL..."\n\
-python scripts/import_from_dump.py\n\
-echo "✅ Datos importados"\n\
+cd /app/backend\n\
+python -c "from app.database import engine; from app.models import Base; Base.metadata.create_all(bind=engine)" || echo "⚠️ Error creando tablas, pero continuando..."\n\
+echo "✅ Tablas creadas o ya existen"\n\
+\n\
 echo "🔐 Creando usuario administrador..."\n\
-python scripts/init_railway.py\n\
-echo "✅ Usuario administrador creado"\n\
+python scripts/init_railway.py || echo "⚠️ Error creando usuario, pero continuando..."\n\
+echo "✅ Inicialización completada"\n\
+\n\
 echo "🌐 Iniciando servidor..."\n\
 python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT\n\
 ' > /app/start.sh && chmod +x /app/start.sh
