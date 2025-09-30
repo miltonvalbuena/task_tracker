@@ -28,6 +28,17 @@ def import_from_dump():
             print(f"❌ Archivo dump no encontrado: {dump_file}")
             return False
         
+        # Verificar conexión a la base de datos antes de importar
+        print("🔍 Verificando conexión a la base de datos...")
+        try:
+            engine = create_engine(database_url)
+            with engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            print("✅ Conexión a base de datos verificada")
+        except Exception as e:
+            print(f"❌ Error conectando a la base de datos: {e}")
+            return False
+        
         # Usar psql para importar el dump
         cmd = [
             "psql",
@@ -43,6 +54,10 @@ def import_from_dump():
             return True
         else:
             print(f"❌ Error importando datos: {result.stderr}")
+            # No fallar si el error es que las tablas ya existen
+            if "already exists" in result.stderr or "duplicate key" in result.stderr:
+                print("⚠️ Algunos datos ya existen, continuando...")
+                return True
             return False
             
     except Exception as e:

@@ -52,8 +52,31 @@ else:
 
 @app.get("/api/v1/health")
 def health_check():
-    return {"status": "healthy", "service": "Task Tracker API"}
+    """Endpoint de salud que verifica la conexión a la base de datos"""
+    try:
+        from app.database import engine
+        from sqlalchemy import text
+        
+        # Verificar conexión a la base de datos
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        
+        return {
+            "status": "healthy", 
+            "service": "Task Tracker API",
+            "database": "connected",
+            "timestamp": "2024-01-01T00:00:00Z"
+        }
+    except Exception as e:
+        return {
+            "status": "unhealthy", 
+            "service": "Task Tracker API",
+            "database": "disconnected",
+            "error": str(e),
+            "timestamp": "2024-01-01T00:00:00Z"
+        }
 
 @app.get("/health")
 def health_check_alt():
-    return {"status": "healthy", "service": "Task Tracker API"}
+    """Endpoint de salud alternativo"""
+    return health_check()
