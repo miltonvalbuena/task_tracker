@@ -30,6 +30,11 @@ def create_admin_user():
     admin_password = os.getenv("ADMIN_PASSWORD", "admin123")
     admin_full_name = os.getenv("ADMIN_FULL_NAME", "Administrador")
     
+    # Asegurar que la contraseña no sea demasiado larga
+    if len(admin_password) > 72:
+        admin_password = admin_password[:72]
+        print(f"⚠️ Contraseña truncada a 72 caracteres para compatibilidad con bcrypt")
+    
     # Intentar crear sesión de base de datos con reintentos
     max_retries = 3
     for attempt in range(max_retries):
