@@ -7,9 +7,9 @@ from app.models import Task, User, Company
 from app.schemas import Task as TaskSchema, TaskCreate, TaskUpdate
 from app.auth import get_current_active_user
 
-router = APIRouter(prefix="/tasks/", tags=["tasks"])
+router = APIRouter(prefix="", tags=["tasks"])
 
-@router.post("/", response_model=TaskSchema)
+@router.post("/tasks", response_model=TaskSchema)
 def create_task(
     task: TaskCreate,
     db: Session = Depends(get_db),
@@ -43,7 +43,7 @@ def create_task(
     db.refresh(db_task)
     return db_task
 
-@router.get("/", response_model=List[TaskSchema])
+@router.get("/tasks", response_model=List[TaskSchema])
 def read_tasks(
     skip: int = 0,
     limit: int = 100,
@@ -83,7 +83,7 @@ def read_tasks(
     ).offset(skip).limit(limit).all()
     return tasks
 
-@router.get("/{task_id}", response_model=TaskSchema)
+@router.get("/tasks/{task_id}", response_model=TaskSchema)
 def read_task(
     task_id: int,
     db: Session = Depends(get_db),
@@ -103,7 +103,7 @@ def read_task(
     
     return task
 
-@router.put("/{task_id}", response_model=TaskSchema)
+@router.put("/tasks/{task_id}", response_model=TaskSchema)
 def update_task(
     task_id: int,
     task_update: TaskUpdate,
@@ -131,7 +131,7 @@ def update_task(
     db.refresh(task)
     return task
 
-@router.delete("/{task_id}")
+@router.delete("/tasks/{task_id}")
 def delete_task(
     task_id: int,
     db: Session = Depends(get_db),
