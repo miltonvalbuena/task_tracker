@@ -68,10 +68,32 @@ if os.path.exists(frontend_path):
     def serve_frontend():
         return FileResponse(f"{frontend_path}/index.html")
     
-    @app.get("/{path:path}")
-    def serve_frontend_routes(path: str):
-        # Para todas las rutas que no sean API, servir el index.html del frontend
+    # Rutas específicas para el frontend
+    @app.get("/dashboard")
+    def serve_dashboard():
         return FileResponse(f"{frontend_path}/index.html")
+    
+    @app.get("/tasks")
+    def serve_tasks():
+        return FileResponse(f"{frontend_path}/index.html")
+    
+    @app.get("/users")
+    def serve_users():
+        return FileResponse(f"{frontend_path}/index.html")
+    
+    @app.get("/companies")
+    def serve_companies():
+        return FileResponse(f"{frontend_path}/index.html")
+    
+    @app.get("/reports")
+    def serve_reports():
+        return FileResponse(f"{frontend_path}/index.html")
+    
+    @app.get("/login")
+    def serve_login():
+        return FileResponse(f"{frontend_path}/index.html")
+    
+    # No usar catch-all route para evitar interceptar rutas de API
 else:
     @app.get("/")
     def read_root():
