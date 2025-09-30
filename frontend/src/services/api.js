@@ -22,8 +22,13 @@ export const api = axios.create({
 
 // Interceptor para manejar errores de autenticación
 api.interceptors.response.use(
-  (response) => response.data,
+  (response) => {
+    console.log('✅ Respuesta exitosa:', response);
+    return response.data;
+  },
   (error) => {
+    console.log('❌ Error en interceptor:', error);
+    console.log('❌ Error response:', error.response);
     if (error.response?.status === 401) {
       // No redirigir automáticamente si estamos en la página de login
       if (!window.location.pathname.includes('/login')) {
