@@ -38,7 +38,18 @@ api.interceptors.response.use(
 
 // Servicios para tareas
 export const taskService = {
-  getAll: (params = {}) => api.get('/api/v1/tasks', { params }),
+  getAll: (params = {}) => {
+    console.log('🔍 Obteniendo tareas con params:', params);
+    return api.get('/api/v1/tasks', { params }).then(response => {
+      console.log('📋 Respuesta de tareas:', response);
+      console.log('📋 Tipo de respuesta:', typeof response);
+      console.log('📋 Es array:', Array.isArray(response));
+      if (response && typeof response === 'object' && !Array.isArray(response)) {
+        console.log('⚠️ Respuesta no es array, claves:', Object.keys(response));
+      }
+      return response;
+    });
+  },
   getById: (id) => api.get(`/api/v1/tasks/${id}`),
   create: (data) => api.post('/api/v1/tasks', data),
   update: (id, data) => api.put(`/api/v1/tasks/${id}`, data),
