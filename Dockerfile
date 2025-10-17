@@ -55,13 +55,9 @@ cd /app/backend\n\
 python -c "from app.database import engine; from app.models import Base; Base.metadata.create_all(bind=engine)" || echo "⚠️ Error creando tablas, pero continuando..."\n\
 echo "✅ Tablas creadas o ya existen"\n\
 \n\
-echo "🔧 Corrigiendo estructura de base de datos..."\n\
-python scripts/fix_db_structure.py || echo "⚠️ Error corrigiendo estructura, pero continuando..."\n\
-echo "✅ Estructura corregida"\n\
-\n\
-echo "🔧 Creando usuario administrador..."\n\
-python scripts/create_admin_manual.py || echo "⚠️ Error creando usuario, pero continuando..."\n\
-echo "✅ Usuario creado"\n\
+echo "🔧 Corrigiendo base de datos..."\n\
+python scripts/fix_railway_db.py || echo "⚠️ Error corrigiendo base de datos, pero continuando..."\n\
+echo "✅ Base de datos corregida"\n\
 \n\
 echo "🌐 Iniciando servidor..."\n\
 python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT\n\
