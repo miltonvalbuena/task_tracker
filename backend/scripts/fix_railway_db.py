@@ -75,14 +75,14 @@ def fix_railway_db():
         except Exception as e:
             print(f"⚠️ Error verificando esquema: {e}")
         
-        # Importar EXACTAMENTE todos los datos locales
-        print("📥 Importando EXACTAMENTE todos los datos locales...")
+        # Importar usuarios y tareas (ARLs y Clientes ya están)
+        print("📥 Importando usuarios y tareas...")
         try:
-            import import_exact_local_data
-            import_exact_local_data.import_exact_local_data()
-            print("✅ TODOS los datos locales importados exitosamente")
+            import import_users_tasks_only
+            import_users_tasks_only.import_users_tasks_only()
+            print("✅ Usuarios y tareas importados exitosamente")
         except Exception as e:
-            print(f"⚠️ Error importando datos locales: {e}")
+            print(f"⚠️ Error importando usuarios y tareas: {e}")
         
         print("✅ Base de datos corregida correctamente")
         
