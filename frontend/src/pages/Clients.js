@@ -349,7 +349,6 @@ function Clients() {
               <FormSelect
                 value={selectedARL}
                 onChange={(e) => setSelectedARL(e.target.value)}
-                placeholder="Todas las ARLs"
                 options={[
                   { value: '', label: 'Todas las ARLs' },
                   ...(arls?.map(arl => ({
