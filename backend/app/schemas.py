@@ -74,10 +74,10 @@ class UserUpdate(BaseModel):
 class User(UserBase):
     id: int
     is_active: bool
-    client_id: int
+    client_id: Optional[int] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
-    client: Client
+    client: Optional[Client] = None
     
     class Config:
         from_attributes = True
