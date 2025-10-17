@@ -43,14 +43,14 @@ def import_exact_local_data():
         tables = inspector.get_table_names()
         print(f"🔍 Tablas en Railway: {tables}")
         
-        # Limpiar datos existentes (excepto admin)
+        # Limpiar datos existentes (excepto admin) - orden correcto para evitar violaciones de FK
         print("🧹 Limpiando datos existentes...")
         db.execute(text("DELETE FROM tasks"))
         db.execute(text("DELETE FROM users WHERE username != 'admin'"))
-        db.execute(text("DELETE FROM clients"))
-        db.execute(text("DELETE FROM arls"))
         if 'companies' in tables:
             db.execute(text("DELETE FROM companies"))
+        db.execute(text("DELETE FROM clients"))
+        db.execute(text("DELETE FROM arls"))
         db.commit()
         print("✅ Datos existentes eliminados")
         
