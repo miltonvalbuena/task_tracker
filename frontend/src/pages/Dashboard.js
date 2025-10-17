@@ -8,12 +8,8 @@ import {
   AlertCircle, 
   Users, 
   Building2,
-  TrendingUp,
-  Calendar,
   Activity,
   Target,
-  Zap,
-  Shield,
   BarChart3,
   PieChart as PieChartIcon,
   BarChart
@@ -57,8 +53,6 @@ function Dashboard() {
     }
   );
 
-
-
   if (isLoading) {
     return (
       <div style={{ 
@@ -100,14 +94,23 @@ function Dashboard() {
     { name: 'Vencidas', value: stats.overdue_tasks, color: '#e74c3c' },
   ] : [];
 
-  const userTaskData = users?.map(userItem => {
+  // Agrupar usuarios por nombre para evitar duplicados
+  const userTaskData = users?.reduce((acc, userItem) => {
     const userTasks = tasks?.filter(task => task.assigned_to === userItem.id) || [];
-    return {
-      name: userItem.full_name,
-      total: userTasks.length,
-      completadas: userTasks.filter(task => task.status === 'completada').length
-    };
-  }) || [];
+    const existingUser = acc.find(u => u.name === userItem.full_name);
+    
+    if (existingUser) {
+      existingUser.total += userTasks.length;
+      existingUser.completadas += userTasks.filter(task => task.status === 'completada').length;
+    } else {
+      acc.push({
+        name: userItem.full_name,
+        total: userTasks.length,
+        completadas: userTasks.filter(task => task.status === 'completada').length
+      });
+    }
+    return acc;
+  }, []) || [];
 
   const companyTaskData = companyStats?.map(company => ({
     name: company.client?.name || 'N/A',
@@ -124,7 +127,7 @@ function Dashboard() {
       background: '#f7f9fc',
       minHeight: '100vh'
     }}>
-      {/* Header Homogéneo */}
+      {/* Header */}
       <div style={{ 
         background: 'white',
         borderRadius: '16px',
@@ -167,7 +170,7 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Estadísticas Principales - Homogéneas */}
+      {/* Estadísticas Principales */}
       <div style={{ 
         display: 'grid', 
         gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
@@ -435,14 +438,14 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* Sección de Gráficos Mejorada */}
+      {/* Sección de Gráficos */}
       <div style={{ 
         display: 'grid', 
         gridTemplateColumns: 'repeat(auto-fit, minmax(600px, 1fr))', 
         gap: '30px',
         marginBottom: '30px'
       }}>
-        {/* Gráfico de Pie Mejorado */}
+        {/* Gráfico de Pie */}
         <div style={{
           background: 'white',
           borderRadius: '16px',
@@ -458,7 +461,7 @@ function Dashboard() {
           }}>
             <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
               <PieChartIcon size={20} />
-              Distribución de Actividades ARL
+              Distribución de Actividades
             </h3>
             <p style={{ margin: '4px 0 0', fontSize: '14px', opacity: 0.9 }}>
               Estado actual del sistema de gestión
@@ -501,40 +504,11 @@ function Dashboard() {
                   </PieChart>
                 </ResponsiveContainer>
               </div>
-              <div style={{ flex: 1, paddingLeft: '20px' }}>
-                <div style={{ fontSize: '14px', fontWeight: '600', color: '#2c3e50', marginBottom: '12px' }}>
-                  Detalle por Estado:
-                </div>
-                {pieData.map((item, index) => (
-                  <div key={index} style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    marginBottom: '8px',
-                    padding: '6px 12px',
-                    backgroundColor: '#f8f9fa',
-                    borderRadius: '6px'
-                  }}>
-                    <div style={{
-                      width: '12px',
-                      height: '12px',
-                      backgroundColor: item.color,
-                      borderRadius: '50%',
-                      marginRight: '8px'
-                    }}></div>
-                    <span style={{ fontSize: '13px', color: '#2c3e50', flex: 1 }}>
-                      {item.name}
-                    </span>
-                    <span style={{ fontSize: '13px', fontWeight: '600', color: '#2c3e50' }}>
-                      {item.value}
-                    </span>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         </div>
 
-        {/* Gráfico de Barras Mejorado - Actividades por ARL */}
+        {/* Gráfico de Barras - Actividades por ARL */}
         {user?.role === 'admin' && (
           <div style={{
             background: 'white',
@@ -767,7 +741,7 @@ function Dashboard() {
         </div>
       )}
 
-      {/* Resumen Ejecutivo Mejorado */}
+      {/* Resumen Ejecutivo Simplificado */}
       <div style={{
         background: 'white',
         borderRadius: '16px',
@@ -783,7 +757,7 @@ function Dashboard() {
         }}>
           <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Target size={20} />
-            Resumen Ejecutivo ARL
+            Indicadores de Rendimiento
           </h3>
           <p style={{ margin: '4px 0 0', fontSize: '14px', opacity: 0.9 }}>
             Métricas clave del sistema de gestión ARL
@@ -792,79 +766,32 @@ function Dashboard() {
         <div style={{ padding: '30px' }}>
           <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
             gap: '24px' 
           }}>
-            {/* Total de Actividades */}
-            <div style={{ 
-              textAlign: 'center', 
-              padding: '24px', 
-              background: 'linear-gradient(135deg, #3498db 0%, #2980b9 100%)',
-              borderRadius: '12px',
-              color: 'white',
-              boxShadow: '0 4px 12px rgba(52, 152, 219, 0.3)'
-            }}>
-              <div style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '8px' }}>
-                {stats?.total_tasks || 0}
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#27ae60' }}>
+                {stats && stats.total_tasks > 0 ? ((stats.completed_tasks / stats.total_tasks) * 100).toFixed(1) : 0}%
               </div>
-              <div style={{ fontSize: '14px', opacity: 0.9 }}>Total de Actividades</div>
-              <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '4px' }}>
-                En el sistema
-              </div>
+              <div style={{ fontSize: '14px', color: '#666' }}>Tasa de Finalización</div>
             </div>
-
-            {/* Actividades Finalizadas */}
-            <div style={{ 
-              textAlign: 'center', 
-              padding: '24px', 
-              background: 'linear-gradient(135deg, #27ae60 0%, #229954 100%)',
-              borderRadius: '12px',
-              color: 'white',
-              boxShadow: '0 4px 12px rgba(39, 174, 96, 0.3)'
-            }}>
-              <div style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '8px' }}>
-                {stats?.completed_tasks || 0}
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#e74c3c' }}>
+                {stats && stats.total_tasks > 0 ? ((stats.overdue_tasks / stats.total_tasks) * 100).toFixed(1) : 0}%
               </div>
-              <div style={{ fontSize: '14px', opacity: 0.9 }}>Finalizadas</div>
-              <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '4px' }}>
-                {stats && stats.total_tasks > 0 ? ((stats.completed_tasks / stats.total_tasks) * 100).toFixed(1) : 0}% del total
-              </div>
+              <div style={{ fontSize: '14px', color: '#666' }}>Tasa de Retraso</div>
             </div>
-
-            {/* Actividades Pendientes */}
-            <div style={{ 
-              textAlign: 'center', 
-              padding: '24px', 
-              background: 'linear-gradient(135deg, #f39c12 0%, #e67e22 100%)',
-              borderRadius: '12px',
-              color: 'white',
-              boxShadow: '0 4px 12px rgba(243, 156, 18, 0.3)'
-            }}>
-              <div style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '8px' }}>
-                {stats?.pending_tasks || 0}
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#3498db' }}>
+                {stats && stats.total_tasks > 0 ? ((stats.in_progress_tasks / stats.total_tasks) * 100).toFixed(1) : 0}%
               </div>
-              <div style={{ fontSize: '14px', opacity: 0.9 }}>Pendientes</div>
-              <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '4px' }}>
-                {stats && stats.total_tasks > 0 ? ((stats.pending_tasks / stats.total_tasks) * 100).toFixed(1) : 0}% del total
-              </div>
+              <div style={{ fontSize: '14px', color: '#666' }}>En Ejecución</div>
             </div>
-
-            {/* Actividades Vencidas */}
-            <div style={{ 
-              textAlign: 'center', 
-              padding: '24px', 
-              background: 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)',
-              borderRadius: '12px',
-              color: 'white',
-              boxShadow: '0 4px 12px rgba(231, 76, 60, 0.3)'
-            }}>
-              <div style={{ fontSize: '32px', fontWeight: 'bold', marginBottom: '8px' }}>
-                {stats?.overdue_tasks || 0}
+            <div style={{ textAlign: 'center' }}>
+              <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#f39c12' }}>
+                {stats && stats.total_tasks > 0 ? ((stats.pending_tasks / stats.total_tasks) * 100).toFixed(1) : 0}%
               </div>
-              <div style={{ fontSize: '14px', opacity: 0.9 }}>Vencidas/Retrasadas</div>
-              <div style={{ fontSize: '12px', opacity: 0.8, marginTop: '4px' }}>
-                Requieren atención inmediata
-              </div>
+              <div style={{ fontSize: '14px', color: '#666' }}>Pendientes</div>
             </div>
           </div>
 
@@ -883,57 +810,14 @@ function Dashboard() {
             </h4>
             <div style={{ fontSize: '14px', color: '#2c3e50', lineHeight: '1.6' }}>
               <p style={{ margin: '0 0 8px 0' }}>
-                <strong>65 Pendientes:</strong> Todas las actividades están en estado pendiente (estado inicial del sistema).
+                <strong>Actividades Pendientes:</strong> Tareas que están en estado inicial y requieren ser iniciadas.
               </p>
               <p style={{ margin: '0 0 8px 0' }}>
-                <strong>16 Vencidas:</strong> De esas 65 pendientes, 16 tienen fechas de vencimiento que ya pasaron y requieren atención inmediata.
+                <strong>Actividades Vencidas:</strong> Tareas que tienen fechas de vencimiento que ya pasaron y requieren atención inmediata.
               </p>
               <p style={{ margin: '0' }}>
                 <strong>Lógica:</strong> Una actividad puede estar pendiente pero vencida si su fecha límite ya expiró.
               </p>
-            </div>
-          </div>
-
-          {/* Indicadores de Rendimiento */}
-          <div style={{ 
-            marginTop: '20px', 
-            padding: '20px', 
-            backgroundColor: '#f8f9fa', 
-            borderRadius: '12px',
-            border: '1px solid #e1e5e9'
-          }}>
-            <h4 style={{ margin: '0 0 16px 0', fontSize: '16px', fontWeight: '600', color: '#2c3e50' }}>
-              Indicadores de Rendimiento
-            </h4>
-            <div style={{ 
-              display: 'grid', 
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-              gap: '16px' 
-            }}>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#27ae60' }}>
-                  {stats && stats.total_tasks > 0 ? ((stats.completed_tasks / stats.total_tasks) * 100).toFixed(1) : 0}%
-                </div>
-                <div style={{ fontSize: '12px', color: '#666' }}>Tasa de Finalización</div>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#e74c3c' }}>
-                  {stats && stats.total_tasks > 0 ? ((stats.overdue_tasks / stats.total_tasks) * 100).toFixed(1) : 0}%
-                </div>
-                <div style={{ fontSize: '12px', color: '#666' }}>Tasa de Retraso</div>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#3498db' }}>
-                  {stats && stats.total_tasks > 0 ? ((stats.in_progress_tasks / stats.total_tasks) * 100).toFixed(1) : 0}%
-                </div>
-                <div style={{ fontSize: '12px', color: '#666' }}>En Ejecución</div>
-              </div>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ fontSize: '20px', fontWeight: 'bold', color: '#f39c12' }}>
-                  {stats && stats.total_tasks > 0 ? ((stats.pending_tasks / stats.total_tasks) * 100).toFixed(1) : 0}%
-                </div>
-                <div style={{ fontSize: '12px', color: '#666' }}>Pendientes</div>
-              </div>
             </div>
           </div>
         </div>
