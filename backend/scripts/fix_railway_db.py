@@ -67,6 +67,14 @@ def fix_railway_db():
         users_count = db.query(User).count()
         print(f"👥 Usuarios en la base de datos: {users_count}")
         
+        # Verificar esquema de la base de datos
+        print("🔍 Verificando esquema de la base de datos...")
+        try:
+            import check_railway_schema
+            check_railway_schema.check_railway_schema()
+        except Exception as e:
+            print(f"⚠️ Error verificando esquema: {e}")
+        
         # Importar datos de ejemplo
         print("📥 Importando datos de ejemplo...")
         try:
