@@ -94,20 +94,24 @@ function Dashboard() {
     { name: 'Vencidas', value: stats.overdue_tasks, color: '#e74c3c' },
   ] : [];
 
-  // Agrupar usuarios por nombre para evitar duplicados
+  // Agrupar usuarios por nombre para evitar duplicados - SOLO usuarios con tareas asignadas
   const userTaskData = users?.reduce((acc, userItem) => {
     const userTasks = tasks?.filter(task => task.assigned_to === userItem.id) || [];
-    const existingUser = acc.find(u => u.name === userItem.full_name);
     
-    if (existingUser) {
-      existingUser.total += userTasks.length;
-      existingUser.completadas += userTasks.filter(task => task.status === 'completada').length;
-    } else {
-      acc.push({
-        name: userItem.full_name,
-        total: userTasks.length,
-        completadas: userTasks.filter(task => task.status === 'completada').length
-      });
+    // Solo incluir usuarios que tienen tareas asignadas
+    if (userTasks.length > 0) {
+      const existingUser = acc.find(u => u.name === userItem.full_name);
+      
+      if (existingUser) {
+        existingUser.total += userTasks.length;
+        existingUser.completadas += userTasks.filter(task => task.status === 'completada').length;
+      } else {
+        acc.push({
+          name: userItem.full_name,
+          total: userTasks.length,
+          completadas: userTasks.filter(task => task.status === 'completada').length
+        });
+      }
     }
     return acc;
   }, []) || [];
