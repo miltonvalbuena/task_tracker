@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { clientService, arlService } from '../services/api';
 import toast from 'react-hot-toast';
-import { Plus, Edit, Trash2, Building2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Building2, Filter, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Badge } from '../components/Badge';
@@ -21,6 +21,12 @@ function Clients() {
     is_active: true,
   });
 
+  // Estados para filtros y búsqueda
+  const [selectedARL, setSelectedARL] = useState(''); // Filtro predeterminado vacío para mostrar todos
+  const [statusFilter, setStatusFilter] = useState('all'); // all, active, inactive
+  const [sortField, setSortField] = useState('name'); // name, arl, created_at
+  const [sortDirection, setSortDirection] = useState('asc'); // asc, desc
+
   const { data: clients, isLoading, error } = useQuery(
     'clients',
     () => clientService.getAll(),
@@ -30,6 +36,68 @@ function Clients() {
     'arls',
     () => arlService.getAll(),
   );
+
+  // Lógica de filtrado y ordenamiento
+  const filteredAndSortedClients = useMemo(() => {
+    if (!Array.isArray(clients)) return [];
+
+    let filtered = clients.filter(client => {
+      // Filtro por ARL
+      const matchesARL = selectedARL === '' || client.arl?.id?.toString() === selectedARL;
+
+      // Filtro por estado
+      const matchesStatus = statusFilter === 'all' || 
+        (statusFilter === 'active' && client.is_active) ||
+        (statusFilter === 'inactive' && !client.is_active);
+
+      return matchesARL && matchesStatus;
+    });
+
+    // Ordenamiento
+    filtered.sort((a, b) => {
+      let aValue, bValue;
+      
+      switch (sortField) {
+        case 'name':
+          aValue = a.name.toLowerCase();
+          bValue = b.name.toLowerCase();
+          break;
+        case 'arl':
+          aValue = a.arl?.name?.toLowerCase() || '';
+          bValue = b.arl?.name?.toLowerCase() || '';
+          break;
+        case 'created_at':
+          aValue = new Date(a.created_at);
+          bValue = new Date(b.created_at);
+          break;
+        default:
+          aValue = a.name.toLowerCase();
+          bValue = b.name.toLowerCase();
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return filtered;
+  }, [clients, selectedARL, statusFilter, sortField, sortDirection]);
+
+  // Función para cambiar el ordenamiento
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  // Función para obtener el icono de ordenamiento
+  const getSortIcon = (field) => {
+    if (sortField !== field) return <ArrowUpDown size={16} />;
+    return sortDirection === 'asc' ? <ArrowUp size={16} /> : <ArrowDown size={16} />;
+  };
 
   const createMutation = useMutation(
     (data) => clientService.create(data),
@@ -259,26 +327,133 @@ function Clients() {
         <div className="card-header">
           <h3 className="card-title">Lista de Clientes</h3>
         </div>
+
+        {/* Filtros */}
+        <div style={{ 
+          padding: '20px', 
+          borderBottom: '1px solid #e1e5e9',
+          backgroundColor: '#f8f9fa'
+        }}>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+            gap: '16px',
+            marginBottom: '16px'
+          }}>
+            {/* Filtro por ARL */}
+            <div className="form-group">
+              <label className="form-label" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Filter size={16} />
+                Filtrar por ARL
+              </label>
+              <FormSelect
+                value={selectedARL}
+                onChange={(e) => setSelectedARL(e.target.value)}
+                placeholder="Todas las ARLs"
+                options={[
+                  { value: '', label: 'Todas las ARLs' },
+                  ...(arls?.map(arl => ({
+                    value: arl.id.toString(),
+                    label: arl.name
+                  })) || [])
+                ]}
+              />
+            </div>
+
+            {/* Filtro por Estado */}
+            <div className="form-group">
+              <label className="form-label">Estado</label>
+              <FormSelect
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                options={[
+                  { value: 'all', label: 'Todos los estados' },
+                  { value: 'active', label: 'Solo activos' },
+                  { value: 'inactive', label: 'Solo inactivos' }
+                ]}
+              />
+            </div>
+          </div>
+
+          {/* Información de resultados */}
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            fontSize: '14px',
+            color: '#666'
+          }}>
+            <span>
+              Mostrando {filteredAndSortedClients.length} de {clients?.length || 0} clientes
+            </span>
+            {(selectedARL || statusFilter !== 'all') && (
+              <button
+                onClick={() => {
+                  setSelectedARL('');
+                  setStatusFilter('all');
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#3498db',
+                  cursor: 'pointer',
+                  textDecoration: 'underline',
+                  fontSize: '14px'
+                }}
+              >
+                Limpiar filtros
+              </button>
+            )}
+          </div>
+        </div>
         
         {!Array.isArray(clients) || clients.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
             No hay clientes registrados.
+          </div>
+        ) : filteredAndSortedClients.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
+            No se encontraron clientes con los filtros aplicados.
           </div>
         ) : (
           <div style={{ overflowX: 'auto' }}>
             <table className="table">
               <thead>
                 <tr>
-                  <th>Cliente</th>
-                  <th>ARL</th>
+                  <th 
+                    style={{ cursor: 'pointer', userSelect: 'none' }}
+                    onClick={() => handleSort('name')}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      Cliente
+                      {getSortIcon('name')}
+                    </div>
+                  </th>
+                  <th 
+                    style={{ cursor: 'pointer', userSelect: 'none' }}
+                    onClick={() => handleSort('arl')}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      ARL
+                      {getSortIcon('arl')}
+                    </div>
+                  </th>
                   <th>Descripción</th>
                   <th>Estado</th>
-                  <th>Fecha de Creación</th>
+                  <th 
+                    style={{ cursor: 'pointer', userSelect: 'none' }}
+                    onClick={() => handleSort('created_at')}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      Fecha de Creación
+                      {getSortIcon('created_at')}
+                    </div>
+                  </th>
                   <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {Array.isArray(clients) && clients.map(client => (
+                {filteredAndSortedClients.map(client => (
                   <tr key={client.id}>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
