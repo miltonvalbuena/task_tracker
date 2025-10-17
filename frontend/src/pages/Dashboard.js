@@ -468,8 +468,9 @@ function Dashboard() {
             </p>
           </div>
           <div style={{ padding: '20px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
+              {/* Gráfico de Pie */}
+              <div style={{ flex: '0 0 300px' }}>
                 <ResponsiveContainer width="100%" height={250}>
                   <PieChart>
                     <Pie
@@ -477,9 +478,7 @@ function Dashboard() {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, value, percent }) => 
-                        value > 0 ? `${name}\n${value} (${(percent * 100).toFixed(1)}%)` : ''
-                      }
+                      label={false}
                       outerRadius={90}
                       innerRadius={30}
                       fill="#3498db"
@@ -503,6 +502,41 @@ function Dashboard() {
                     />
                   </PieChart>
                 </ResponsiveContainer>
+              </div>
+              
+              {/* Leyendas */}
+              <div style={{ flex: 1, paddingLeft: '20px' }}>
+                <div style={{ fontSize: '14px', fontWeight: '600', color: '#2c3e50', marginBottom: '16px' }}>
+                  Detalle por Estado:
+                </div>
+                {pieData.map((item, index) => (
+                  <div key={index} style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    marginBottom: '12px',
+                    padding: '8px 12px',
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: '8px',
+                    border: '1px solid #e1e5e9'
+                  }}>
+                    <div style={{
+                      width: '16px',
+                      height: '16px',
+                      backgroundColor: item.color,
+                      borderRadius: '50%',
+                      marginRight: '12px',
+                      flexShrink: 0
+                    }}></div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '14px', fontWeight: '600', color: '#2c3e50', marginBottom: '2px' }}>
+                        {item.name}
+                      </div>
+                      <div style={{ fontSize: '12px', color: '#666' }}>
+                        {item.value} actividades ({((item.value / (stats?.total_tasks || 1)) * 100).toFixed(1)}%)
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
