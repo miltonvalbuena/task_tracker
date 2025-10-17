@@ -75,14 +75,14 @@ def fix_railway_db():
         except Exception as e:
             print(f"⚠️ Error verificando esquema: {e}")
         
-        # Importar datos de ejemplo
-        print("📥 Importando datos de ejemplo...")
+        # Importar datos compatible con Railway
+        print("📥 Importando datos compatible con Railway...")
         try:
-            import import_data_direct
-            import_data_direct.import_data_direct()
-            print("✅ Datos de ejemplo importados exitosamente")
+            import import_railway_compatible
+            import_railway_compatible.import_railway_compatible()
+            print("✅ Datos importados exitosamente")
         except Exception as e:
-            print(f"⚠️ Error importando datos de ejemplo: {e}")
+            print(f"⚠️ Error importando datos: {e}")
         
         print("✅ Base de datos corregida correctamente")
         
