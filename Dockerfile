@@ -55,6 +55,10 @@ cd /app/backend\n\
 python -c "from app.database import engine; from app.models import Base; Base.metadata.create_all(bind=engine)" || echo "⚠️ Error creando tablas, pero continuando..."\n\
 echo "✅ Tablas creadas o ya existen"\n\
 \n\
+echo "🔧 Corrigiendo estructura de base de datos..."\n\
+python scripts/fix_db_structure.py || echo "⚠️ Error corrigiendo estructura, pero continuando..."\n\
+echo "✅ Estructura corregida"\n\
+\n\
 echo "🔧 Actualizando base de datos..."\n\
 python scripts/update_railway_db.py || echo "⚠️ Error actualizando base de datos, pero continuando..."\n\
 echo "✅ Actualización completada"\n\
