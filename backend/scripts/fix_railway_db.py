@@ -67,19 +67,14 @@ def fix_railway_db():
         users_count = db.query(User).count()
         print(f"👥 Usuarios en la base de datos: {users_count}")
         
-        # Importar datos locales si existe el archivo de exportación
-        export_files = [f for f in os.listdir('/app/backend') if f.startswith('local_data_export_') and f.endswith('.json')]
-        if export_files:
-            latest_export = sorted(export_files)[-1]  # Obtener el más reciente
-            print(f"📥 Importando datos desde: {latest_export}")
-            try:
-                import import_to_railway
-                import_to_railway.import_to_railway(f'/app/backend/{latest_export}')
-                print("✅ Datos locales importados exitosamente")
-            except Exception as e:
-                print(f"⚠️ Error importando datos locales: {e}")
-        else:
-            print("ℹ️ No se encontró archivo de exportación local")
+        # Importar datos de ejemplo
+        print("📥 Importando datos de ejemplo...")
+        try:
+            import import_data_direct
+            import_data_direct.import_data_direct()
+            print("✅ Datos de ejemplo importados exitosamente")
+        except Exception as e:
+            print(f"⚠️ Error importando datos de ejemplo: {e}")
         
         print("✅ Base de datos corregida correctamente")
         
