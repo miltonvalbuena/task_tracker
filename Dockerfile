@@ -55,9 +55,9 @@ cd /app/backend\n\
 python -c "from app.database import engine; from app.models import Base; Base.metadata.create_all(bind=engine)" || echo "⚠️ Error creando tablas, pero continuando..."\n\
 echo "✅ Tablas creadas o ya existen"\n\
 \n\
-echo "🔐 Creando usuario administrador..."\n\
-python scripts/init_railway.py || echo "⚠️ Error creando usuario, pero continuando..."\n\
-echo "✅ Inicialización completada"\n\
+echo "🔧 Actualizando base de datos..."\n\
+python scripts/update_railway_db.py || echo "⚠️ Error actualizando base de datos, pero continuando..."\n\
+echo "✅ Actualización completada"\n\
 \n\
 echo "🌐 Iniciando servidor..."\n\
 python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT\n\

@@ -14,7 +14,7 @@ from sqlalchemy.orm import sessionmaker
 # Agregar el directorio padre al path para importar los modelos
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.models import Base, User, Company
+from app.models import Base, User, Client
 from app.database import get_db
 
 def create_admin_user():
@@ -83,9 +83,9 @@ def create_admin_user():
                     db.rollback()
                     db.close()
 
-def create_default_company():
-    """Crear empresa por defecto"""
-    print("🏢 Creando empresa por defecto...")
+def create_default_client():
+    """Crear cliente por defecto"""
+    print("🏢 Creando cliente por defecto...")
     
     # Intentar crear sesión de base de datos con reintentos
     max_retries = 3
@@ -93,16 +93,16 @@ def create_default_company():
         try:
             db = next(get_db())
             
-            # Verificar si ya existe una empresa por defecto
-            existing_company = db.query(Company).filter(Company.name == "EMPRESA PRINCIPAL").first()
+            # Verificar si ya existe un cliente por defecto
+            existing_client = db.query(Client).filter(Client.name == "EMPRESA PRINCIPAL").first()
             
-            if existing_company:
-                print("✅ Empresa por defecto ya existe")
+            if existing_client:
+                print("✅ Cliente por defecto ya existe")
                 db.close()
                 return
             
-            # Crear empresa por defecto
-            default_company = Company(
+            # Crear cliente por defecto
+            default_client = Client(
                 name="EMPRESA PRINCIPAL",
                 description="Empresa principal del sistema - completamente configurable",
                 is_active=True,
@@ -195,21 +195,21 @@ def create_default_company():
                 ]
             )
             
-            db.add(default_company)
+            db.add(default_client)
             db.commit()
             
-            print("✅ Empresa por defecto creada exitosamente")
+            print("✅ Cliente por defecto creado exitosamente")
             db.close()
             return
             
         except Exception as e:
-            print(f"❌ Error al crear empresa por defecto (intento {attempt + 1}/{max_retries}): {e}")
+            print(f"❌ Error al crear cliente por defecto (intento {attempt + 1}/{max_retries}): {e}")
             if attempt < max_retries - 1:
                 print("⏳ Esperando 5 segundos antes del siguiente intento...")
                 import time
                 time.sleep(5)
             else:
-                print("❌ No se pudo crear la empresa por defecto después de todos los intentos")
+                print("❌ No se pudo crear el cliente por defecto después de todos los intentos")
                 if 'db' in locals():
                     db.rollback()
                     db.close()
@@ -222,8 +222,8 @@ def main():
         # Crear usuario administrador
         create_admin_user()
         
-        # Crear empresa por defecto
-        create_default_company()
+        # Crear cliente por defecto
+        create_default_client()
         
         print("✅ Inicialización completada exitosamente")
         print("🌐 La aplicación está lista para usar")
