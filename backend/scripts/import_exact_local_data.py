@@ -43,16 +43,40 @@ def import_exact_local_data():
         tables = inspector.get_table_names()
         print(f"🔍 Tablas en Railway: {tables}")
         
-        # Limpiar datos existentes (excepto admin) - orden correcto para evitar violaciones de FK
+        # Limpiar datos existentes (excepto admin) - deshabilitar FK temporalmente
         print("🧹 Limpiando datos existentes...")
-        db.execute(text("DELETE FROM tasks"))
-        db.execute(text("DELETE FROM users WHERE username != 'admin'"))
-        if 'companies' in tables:
-            db.execute(text("DELETE FROM companies"))
-        db.execute(text("DELETE FROM clients"))
-        db.execute(text("DELETE FROM arls"))
-        db.commit()
-        print("✅ Datos existentes eliminados")
+        try:
+            # Deshabilitar restricciones de clave foránea temporalmente
+            db.execute(text("SET session_replication_role = replica"))
+            
+            db.execute(text("DELETE FROM tasks"))
+            db.execute(text("DELETE FROM users WHERE username != 'admin'"))
+            if 'companies' in tables:
+                db.execute(text("DELETE FROM companies"))
+            db.execute(text("DELETE FROM clients"))
+            db.execute(text("DELETE FROM arls"))
+            
+            # Restaurar restricciones de clave foránea
+            db.execute(text("SET session_replication_role = DEFAULT"))
+            
+            db.commit()
+            print("✅ Datos existentes eliminados")
+        except Exception as e:
+            print(f"⚠️ Error limpiando datos: {e}")
+            db.rollback()
+            # Intentar limpieza manual
+            try:
+                db.execute(text("DELETE FROM tasks"))
+                db.execute(text("DELETE FROM users WHERE username != 'admin'"))
+                db.execute(text("DELETE FROM clients"))
+                db.execute(text("DELETE FROM arls"))
+                if 'companies' in tables:
+                    db.execute(text("DELETE FROM companies"))
+                db.commit()
+                print("✅ Datos existentes eliminados (método alternativo)")
+            except Exception as e2:
+                print(f"❌ Error en limpieza alternativa: {e2}")
+                db.rollback()
         
         # Importar ARLs
         print("📋 Importando ARLs...")
