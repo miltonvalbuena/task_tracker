@@ -59,9 +59,9 @@ echo "🔧 Corrigiendo estructura de base de datos..."\n\
 python scripts/fix_db_structure.py || echo "⚠️ Error corrigiendo estructura, pero continuando..."\n\
 echo "✅ Estructura corregida"\n\
 \n\
-echo "🔧 Actualizando base de datos..."\n\
-python scripts/update_railway_db.py || echo "⚠️ Error actualizando base de datos, pero continuando..."\n\
-echo "✅ Actualización completada"\n\
+echo "🔧 Creando usuario administrador..."\n\
+python scripts/create_admin_manual.py || echo "⚠️ Error creando usuario, pero continuando..."\n\
+echo "✅ Usuario creado"\n\
 \n\
 echo "🌐 Iniciando servidor..."\n\
 python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT\n\
