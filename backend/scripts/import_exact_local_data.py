@@ -163,7 +163,7 @@ def import_exact_local_data():
                     "username": user_data['username'],
                     "full_name": user_data['full_name'],
                     "hashed_password": user_data['hashed_password'],
-                    "role": user_data['role'],
+                    "role": user_data['role'].upper() if user_data['role'] else "USER",
                     "is_active": user_data['is_active'],
                     "client_id": client_id_mapping.get(user_data['client_id']) if user_data['client_id'] else None,
                     "company_id": company_id,
@@ -177,7 +177,7 @@ def import_exact_local_data():
                     username=user_data['username'],
                     full_name=user_data['full_name'],
                     hashed_password=user_data['hashed_password'],
-                    role=user_data['role'],
+                    role=user_data['role'].upper() if user_data['role'] else "USER",
                     is_active=user_data['is_active'],
                     client_id=client_id_mapping.get(user_data['client_id']) if user_data['client_id'] else None
                 )
