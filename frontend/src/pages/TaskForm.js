@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { taskService, userService, companyService } from '../services/api';
+import { taskService, userService, clientService } from '../services/api';
 import toast from 'react-hot-toast';
 import { Save, ArrowLeft } from 'lucide-react';
+import FormSelect from '../components/FormSelect';
+import ActionButton from '../components/ActionButton';
 
 function TaskForm() {
   const { id } = useParams();
@@ -20,7 +22,7 @@ function TaskForm() {
     priority: 'media',
     due_date: '',
     assigned_to: '',
-    company_id: user?.company_id || '',
+    client_id: user?.client_id || '',
     custom_fields: {},
   });
 
@@ -40,17 +42,17 @@ function TaskForm() {
     }
   );
 
-  const { data: companies } = useQuery(
-    'companies',
-    () => companyService.getAll(),
+  const { data: clients } = useQuery(
+    'clients',
+    () => clientService.getAll(),
     {
       enabled: user?.role === 'admin',
     }
   );
 
-  // Obtener la configuración de campos personalizados de la empresa seleccionada
-  const selectedCompany = companies?.find(company => company.id === parseInt(formData.company_id));
-  const customFieldsConfig = selectedCompany?.custom_fields_config || [];
+  // Obtener la configuración de campos personalizados del cliente seleccionado
+  const selectedClient = clients?.find(client => client.id === parseInt(formData.client_id));
+  const customFieldsConfig = selectedClient?.custom_fields_config || [];
 
   const createMutation = useMutation(
     (data) => taskService.create(data),
@@ -61,7 +63,18 @@ function TaskForm() {
         navigate('/tasks');
       },
       onError: (error) => {
-        toast.error(error.response?.data?.detail || 'Error al crear la tarea');
+        const errorData = error.response?.data;
+        if (errorData?.detail) {
+          if (Array.isArray(errorData.detail)) {
+            // Manejar errores de validación de Pydantic
+            const errorMessages = errorData.detail.map(err => err.msg || err.message || 'Error de validación').join(', ');
+            toast.error(errorMessages);
+          } else {
+            toast.error(errorData.detail);
+          }
+        } else {
+          toast.error('Error al crear la tarea');
+        }
       },
     }
   );
@@ -76,7 +89,18 @@ function TaskForm() {
         navigate('/tasks');
       },
       onError: (error) => {
-        toast.error(error.response?.data?.detail || 'Error al actualizar la tarea');
+        const errorData = error.response?.data;
+        if (errorData?.detail) {
+          if (Array.isArray(errorData.detail)) {
+            // Manejar errores de validación de Pydantic
+            const errorMessages = errorData.detail.map(err => err.msg || err.message || 'Error de validación').join(', ');
+            toast.error(errorMessages);
+          } else {
+            toast.error(errorData.detail);
+          }
+        } else {
+          toast.error('Error al actualizar la tarea');
+        }
       },
     }
   );
@@ -90,7 +114,7 @@ function TaskForm() {
         priority: task.priority || 'media',
         due_date: task.due_date ? task.due_date.split('T')[0] : '',
         assigned_to: task.assigned_to || '',
-        company_id: task.company_id || user?.company_id || '',
+        client_id: task.client_id || user?.client_id || '',
         custom_fields: task.custom_fields || {},
       });
     }
@@ -98,13 +122,13 @@ function TaskForm() {
 
   // Limpiar campos personalizados cuando cambie la empresa (solo en modo creación)
   useEffect(() => {
-    if (!isEdit && formData.company_id) {
+    if (!isEdit && formData.client_id) {
       setFormData(prev => ({
         ...prev,
         custom_fields: {}
       }));
     }
-  }, [formData.company_id, isEdit]);
+  }, [formData.client_id, isEdit]);
 
   const handleChange = (e) => {
     setFormData({
@@ -250,10 +274,18 @@ function TaskForm() {
   const handleSubmit = (e) => {
     e.preventDefault();
     
+    // Convertir fecha a formato datetime si existe
+    let dueDate = null;
+    if (formData.due_date) {
+      // Convertir fecha (YYYY-MM-DD) a datetime (YYYY-MM-DDTHH:MM:SS)
+      dueDate = `${formData.due_date}T00:00:00`;
+    }
+    
     const submitData = {
       ...formData,
       assigned_to: formData.assigned_to ? parseInt(formData.assigned_to) : null,
-      company_id: parseInt(formData.company_id),
+      client_id: parseInt(formData.client_id),
+      due_date: dueDate,
     };
 
     if (isEdit) {
@@ -274,12 +306,12 @@ function TaskForm() {
     }}>
       {/* Header con diseño mejorado */}
       <div style={{ 
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',
         color: 'white',
         padding: '24px',
         borderRadius: '12px',
         marginBottom: '30px',
-        boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)'
+        boxShadow: '0 8px 32px rgba(44, 62, 80, 0.3)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <button
@@ -298,11 +330,11 @@ function TaskForm() {
               fontWeight: '500',
               transition: 'all 0.3s ease'
             }}
-            onMouseOver={(e) => {
-              e.target.style.background = 'rgba(255,255,255,0.3)';
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.3)';
             }}
-            onMouseOut={(e) => {
-              e.target.style.background = 'rgba(255,255,255,0.2)';
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
             }}
           >
             <ArrowLeft size={16} />
@@ -335,7 +367,7 @@ function TaskForm() {
               marginBottom: '20px', 
               fontSize: '20px',
               fontWeight: '600',
-              borderBottom: '3px solid #007bff',
+              borderBottom: '3px solid #3498db',
               paddingBottom: '8px'
             }}>
               Información Básica
@@ -371,9 +403,9 @@ function TaskForm() {
                     background: '#fafbfc'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#007bff';
+                    e.target.style.borderColor = '#3498db';
                     e.target.style.background = 'white';
-                    e.target.style.boxShadow = '0 0 0 3px rgba(0,123,255,0.1)';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(52,152,219,0.1)';
                   }}
                   onBlur={(e) => {
                     e.target.style.borderColor = '#e1e5e9';
@@ -385,89 +417,33 @@ function TaskForm() {
                 />
               </div>
 
-              <div>
-                <label style={{
-                  display: 'block',
-                  marginBottom: '8px',
-                  fontWeight: '600',
-                  color: '#333',
-                  fontSize: '14px'
-                }}>
-                  Estado
-                </label>
-                <select
-                  name="status"
-                  value={formData.status}
-                  onChange={handleChange}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    border: '2px solid #e1e5e9',
-                    borderRadius: '8px',
-                    fontSize: '16px',
-                    background: '#fafbfc',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = '#007bff';
-                    e.target.style.background = 'white';
-                    e.target.style.boxShadow = '0 0 0 3px rgba(0,123,255,0.1)';
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = '#e1e5e9';
-                    e.target.style.background = '#fafbfc';
-                    e.target.style.boxShadow = 'none';
-                  }}
-                >
-                  <option value="pendiente">Pendiente</option>
-                  <option value="en_progreso">En Progreso</option>
-                  <option value="completada">Completada</option>
-                  <option value="cancelada">Cancelada</option>
-                </select>
-              </div>
+              <FormSelect
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                label="Estado"
+                required
+                options={[
+                  { value: 'pendiente', label: 'Pendiente' },
+                  { value: 'en_progreso', label: 'En Ejecución' },
+                  { value: 'completada', label: 'Finalizada' },
+                  { value: 'cancelada', label: 'Cancelada' }
+                ]}
+              />
 
-              <div>
-                <label style={{
-                  display: 'block',
-                  marginBottom: '8px',
-                  fontWeight: '600',
-                  color: '#333',
-                  fontSize: '14px'
-                }}>
-                  Prioridad
-                </label>
-                <select
-                  name="priority"
-                  value={formData.priority}
-                  onChange={handleChange}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    border: '2px solid #e1e5e9',
-                    borderRadius: '8px',
-                    fontSize: '16px',
-                    background: '#fafbfc',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = '#007bff';
-                    e.target.style.background = 'white';
-                    e.target.style.boxShadow = '0 0 0 3px rgba(0,123,255,0.1)';
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = '#e1e5e9';
-                    e.target.style.background = '#fafbfc';
-                    e.target.style.boxShadow = 'none';
-                  }}
-                >
-                  <option value="baja">Baja</option>
-                  <option value="media">Media</option>
-                  <option value="alta">Alta</option>
-                  <option value="critica">Crítica</option>
-                </select>
-              </div>
+              <FormSelect
+                name="priority"
+                value={formData.priority}
+                onChange={handleChange}
+                label="Prioridad"
+                required
+                options={[
+                  { value: 'baja', label: 'Baja' },
+                  { value: 'media', label: 'Media' },
+                  { value: 'alta', label: 'Alta' },
+                  { value: 'critica', label: 'Crítica' }
+                ]}
+              />
 
               <div>
                 <label style={{
@@ -494,9 +470,9 @@ function TaskForm() {
                     transition: 'all 0.3s ease'
                   }}
                   onFocus={(e) => {
-                    e.target.style.borderColor = '#007bff';
+                    e.target.style.borderColor = '#3498db';
                     e.target.style.background = 'white';
-                    e.target.style.boxShadow = '0 0 0 3px rgba(0,123,255,0.1)';
+                    e.target.style.boxShadow = '0 0 0 3px rgba(52,152,219,0.1)';
                   }}
                   onBlur={(e) => {
                     e.target.style.borderColor = '#e1e5e9';
@@ -506,95 +482,31 @@ function TaskForm() {
                 />
               </div>
 
-              <div>
-                <label style={{
-                  display: 'block',
-                  marginBottom: '8px',
-                  fontWeight: '600',
-                  color: '#333',
-                  fontSize: '14px'
-                }}>
-                  Asignado a
-                </label>
-                <select
-                  name="assigned_to"
-                  value={formData.assigned_to}
-                  onChange={handleChange}
-                  style={{
-                    width: '100%',
-                    padding: '12px 16px',
-                    border: '2px solid #e1e5e9',
-                    borderRadius: '8px',
-                    fontSize: '16px',
-                    background: '#fafbfc',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onFocus={(e) => {
-                    e.target.style.borderColor = '#007bff';
-                    e.target.style.background = 'white';
-                    e.target.style.boxShadow = '0 0 0 3px rgba(0,123,255,0.1)';
-                  }}
-                  onBlur={(e) => {
-                    e.target.style.borderColor = '#e1e5e9';
-                    e.target.style.background = '#fafbfc';
-                    e.target.style.boxShadow = 'none';
-                  }}
-                >
-                  <option value="">Sin asignar</option>
-                  {users?.map(user => (
-                    <option key={user.id} value={user.id}>
-                      {user.full_name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <FormSelect
+                name="assigned_to"
+                value={formData.assigned_to}
+                onChange={handleChange}
+                label="Asignado a"
+                placeholder="Sin asignar"
+                options={users?.map(user => ({
+                  value: user.id,
+                  label: user.full_name
+                })) || []}
+              />
 
               {user?.role === 'admin' && (
-                <div>
-                  <label style={{
-                    display: 'block',
-                    marginBottom: '8px',
-                    fontWeight: '600',
-                    color: '#333',
-                    fontSize: '14px'
-                  }}>
-                    Empresa *
-                  </label>
-                  <select
-                    name="company_id"
-                    value={formData.company_id}
-                    onChange={handleChange}
-                    style={{
-                      width: '100%',
-                      padding: '12px 16px',
-                      border: '2px solid #e1e5e9',
-                      borderRadius: '8px',
-                      fontSize: '16px',
-                      background: '#fafbfc',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s ease'
-                    }}
-                    onFocus={(e) => {
-                      e.target.style.borderColor = '#007bff';
-                      e.target.style.background = 'white';
-                      e.target.style.boxShadow = '0 0 0 3px rgba(0,123,255,0.1)';
-                    }}
-                    onBlur={(e) => {
-                      e.target.style.borderColor = '#e1e5e9';
-                      e.target.style.background = '#fafbfc';
-                      e.target.style.boxShadow = 'none';
-                    }}
-                    required
-                  >
-                    <option value="">Seleccionar empresa</option>
-                    {companies?.map(company => (
-                      <option key={company.id} value={company.id}>
-                        {company.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <FormSelect
+                  name="client_id"
+                  value={formData.client_id}
+                  onChange={handleChange}
+                  label="Cliente"
+                  required
+                  placeholder="Seleccionar cliente"
+                  options={clients?.map(client => ({
+                    value: client.id,
+                    label: client.name
+                  })) || []}
+                />
               )}
             </div>
           </div>
@@ -606,7 +518,7 @@ function TaskForm() {
               marginBottom: '20px', 
               fontSize: '20px',
               fontWeight: '600',
-              borderBottom: '3px solid #28a745',
+              borderBottom: '3px solid #27ae60',
               paddingBottom: '8px'
             }}>
               Descripción
@@ -639,9 +551,9 @@ function TaskForm() {
                   transition: 'all 0.3s ease'
                 }}
                 onFocus={(e) => {
-                  e.target.style.borderColor = '#28a745';
+                  e.target.style.borderColor = '#27ae60';
                   e.target.style.background = 'white';
-                  e.target.style.boxShadow = '0 0 0 3px rgba(40,167,69,0.1)';
+                  e.target.style.boxShadow = '0 0 0 3px rgba(39,174,96,0.1)';
                 }}
                 onBlur={(e) => {
                   e.target.style.borderColor = '#e1e5e9';
@@ -664,7 +576,7 @@ function TaskForm() {
                 borderBottom: '3px solid #ffc107',
                 paddingBottom: '8px'
               }}>
-                Campos Específicos de {selectedCompany?.name || 'la Empresa'}
+                Campos Específicos de {selectedClient?.name || 'el Cliente'}
               </h2>
               <div style={{ 
                 display: 'grid', 
@@ -710,68 +622,22 @@ function TaskForm() {
             paddingTop: '24px',
             borderTop: '2px solid #f8f9fa'
           }}>
-            <button
+            <ActionButton
               type="button"
+              variant="secondary"
               onClick={() => navigate('/tasks')}
-              style={{
-                background: '#6c757d',
-                color: 'white',
-                border: 'none',
-                padding: '12px 24px',
-                borderRadius: '8px',
-                fontSize: '16px',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}
-              onMouseOver={(e) => {
-                e.target.style.background = '#5a6268';
-                e.target.style.transform = 'translateY(-2px)';
-              }}
-              onMouseOut={(e) => {
-                e.target.style.background = '#6c757d';
-                e.target.style.transform = 'translateY(0)';
-              }}
             >
               Cancelar
-            </button>
-            <button
+            </ActionButton>
+            <ActionButton
               type="submit"
+              variant="primary"
               disabled={isLoading}
-              style={{
-                background: isLoading ? '#6c757d' : 'linear-gradient(135deg, #007bff 0%, #0056b3 100%)',
-                color: 'white',
-                border: 'none',
-                padding: '12px 24px',
-                borderRadius: '8px',
-                fontSize: '16px',
-                fontWeight: '600',
-                cursor: isLoading ? 'not-allowed' : 'pointer',
-                transition: 'all 0.3s ease',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: isLoading ? 'none' : '0 4px 15px rgba(0,123,255,0.3)'
-              }}
-              onMouseOver={(e) => {
-                if (!isLoading) {
-                  e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = '0 6px 20px rgba(0,123,255,0.4)';
-                }
-              }}
-              onMouseOut={(e) => {
-                if (!isLoading) {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 4px 15px rgba(0,123,255,0.3)';
-                }
-              }}
+              loading={isLoading}
+              icon={Save}
             >
-              <Save size={16} />
               {isLoading ? 'Guardando...' : (isEdit ? 'Actualizar Actividad' : 'Crear Actividad')}
-            </button>
+            </ActionButton>
           </div>
         </form>
       </div>

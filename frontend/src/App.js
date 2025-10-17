@@ -10,7 +10,7 @@ import Dashboard from './pages/Dashboard';
 import Tasks from './pages/Tasks';
 import TaskForm from './pages/TaskForm';
 import Users from './pages/Users';
-import Companies from './pages/Companies';
+import Clients from './pages/Clients';
 import Reports from './pages/Reports';
 import SystemConfig from './pages/SystemConfig';
 import './App.css';
@@ -47,7 +47,7 @@ function AppContent() {
   return (
     <Router>
       {user && <Navbar />}
-      <div className="container">
+      <div className="container-fluid">
         <Routes>
           <Route path="/login" element={!user ? <Login /> : <Navigate to="/dashboard" />} />
           <Route path="/" element={<Navigate to="/dashboard" />} />
@@ -82,10 +82,10 @@ function AppContent() {
             </ProtectedRoute>
           } />
           
-          <Route path="/companies" element={
+          <Route path="/clients" element={
             <ProtectedRoute>
               <AdminRoute>
-                <Companies />
+                <Clients />
               </AdminRoute>
             </ProtectedRoute>
           } />

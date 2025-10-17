@@ -3,25 +3,52 @@ from typing import Optional, List, Dict, Any
 from datetime import datetime
 from app.models import TaskStatus, TaskPriority, UserRole, FieldType
 
-# Company Schemas
-class CompanyBase(BaseModel):
+# ARL Schemas
+class ARLBase(BaseModel):
     name: str
     description: Optional[str] = None
 
-class CompanyCreate(CompanyBase):
+class ARLCreate(ARLBase):
     pass
 
-class CompanyUpdate(BaseModel):
+class ARLUpdate(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
     is_active: Optional[bool] = None
 
-class Company(CompanyBase):
+class ARL(ARLBase):
+    id: int
+    is_active: bool
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+    
+    class Config:
+        from_attributes = True
+
+# Client Schemas
+class ClientBase(BaseModel):
+    name: str
+    nit: Optional[str] = None
+    description: Optional[str] = None
+    arl_id: int
+
+class ClientCreate(ClientBase):
+    pass
+
+class ClientUpdate(BaseModel):
+    name: Optional[str] = None
+    nit: Optional[str] = None
+    description: Optional[str] = None
+    arl_id: Optional[int] = None
+    is_active: Optional[bool] = None
+
+class Client(ClientBase):
     id: int
     is_active: bool
     custom_fields_config: Optional[List[Dict[str, Any]]] = []
     created_at: datetime
     updated_at: Optional[datetime] = None
+    arl: ARL  # Incluir información de la ARL
     
     class Config:
         from_attributes = True
@@ -35,7 +62,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
-    company_id: int
+    client_id: int
 
 class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
@@ -47,10 +74,10 @@ class UserUpdate(BaseModel):
 class User(UserBase):
     id: int
     is_active: bool
-    company_id: int
+    client_id: int
     created_at: datetime
     updated_at: Optional[datetime] = None
-    company: Company
+    client: Client
     
     class Config:
         from_attributes = True
@@ -66,7 +93,7 @@ class TaskBase(BaseModel):
 
 class TaskCreate(TaskBase):
     assigned_to: Optional[int] = None
-    company_id: int
+    client_id: int
 
 class TaskUpdate(BaseModel):
     title: Optional[str] = None
@@ -79,13 +106,13 @@ class TaskUpdate(BaseModel):
 
 class Task(TaskBase):
     id: int
-    company_id: int
+    client_id: int
     assigned_to: Optional[int] = None
     created_by: int
     completed_at: Optional[datetime] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
-    company: Company
+    client: Client
     assigned_user: Optional[User] = None
     created_by_user: User
     
@@ -112,8 +139,8 @@ class TaskStats(BaseModel):
     completed_tasks: int
     overdue_tasks: int
 
-class CompanyStats(BaseModel):
-    company: Company
+class ClientStats(BaseModel):
+    client: Client
     task_stats: TaskStats
     total_users: int
 
@@ -127,5 +154,5 @@ class CustomFieldConfig(BaseModel):
     placeholder: Optional[str] = None
     help_text: Optional[str] = None
 
-class CompanyConfigUpdate(BaseModel):
+class ClientConfigUpdate(BaseModel):
     custom_fields_config: List[CustomFieldConfig]

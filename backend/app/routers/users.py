@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
 from app.database import get_db
-from app.models import User, Company
+from app.models import User, Client
 from app.schemas import User as UserSchema, UserCreate, UserUpdate
 from app.auth import get_current_active_user, require_admin, get_password_hash
 
@@ -14,10 +14,10 @@ def create_user(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
-    # Verificar que la empresa existe
-    company = db.query(Company).filter(Company.id == user.company_id).first()
-    if not company:
-        raise HTTPException(status_code=404, detail="Company not found")
+    # Verificar que el cliente existe
+    client = db.query(Client).filter(Client.id == user.client_id).first()
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
     
     # Verificar que el email y username no existen
     if db.query(User).filter(User.email == user.email).first():
@@ -31,7 +31,7 @@ def create_user(
         username=user.username,
         full_name=user.full_name,
         role=user.role,
-        company_id=user.company_id,
+        client_id=user.client_id,
         hashed_password=hashed_password
     )
     db.add(db_user)
@@ -46,11 +46,11 @@ def read_users(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    # Los usuarios solo pueden ver usuarios de su empresa, excepto los admins
+    # Los usuarios solo pueden ver usuarios de su cliente, excepto los admins
     if current_user.role == "admin":
         users = db.query(User).offset(skip).limit(limit).all()
     else:
-        users = db.query(User).filter(User.company_id == current_user.company_id).offset(skip).limit(limit).all()
+        users = db.query(User).filter(User.client_id == current_user.client_id).offset(skip).limit(limit).all()
     return users
 
 @router.get("/{user_id}", response_model=UserSchema)
@@ -63,8 +63,8 @@ def read_user(
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Los usuarios solo pueden ver usuarios de su empresa, excepto los admins
-    if current_user.role != "admin" and user.company_id != current_user.company_id:
+    # Los usuarios solo pueden ver usuarios de su cliente, excepto los admins
+    if current_user.role != "admin" and user.client_id != current_user.client_id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
     
     return user
@@ -80,8 +80,8 @@ def update_user(
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Los usuarios solo pueden actualizar usuarios de su empresa, excepto los admins
-    if current_user.role != "admin" and user.company_id != current_user.company_id:
+    # Los usuarios solo pueden actualizar usuarios de su cliente, excepto los admins
+    if current_user.role != "admin" and user.client_id != current_user.client_id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
     
     update_data = user_update.dict(exclude_unset=True)

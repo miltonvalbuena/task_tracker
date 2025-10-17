@@ -2,27 +2,27 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import func, and_
 from typing import List
-from datetime import datetime
+from datetime import datetime, timezone
 from app.database import get_db
-from app.models import Task, User, Company
-from app.schemas import TaskStats, CompanyStats
+from app.models import Task, User, Client
+from app.schemas import TaskStats, ClientStats
 from app.auth import get_current_active_user, require_admin
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
 @router.get("/stats", response_model=TaskStats)
 def get_task_stats(
-    company_id: int = None,
+    client_id: int = None,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    # Los usuarios solo pueden ver estadísticas de su empresa, excepto los admins
-    if current_user.role != "admin" and company_id != current_user.company_id:
-        company_id = current_user.company_id
+    # Los usuarios solo pueden ver estadísticas de su cliente, excepto los admins
+    if current_user.role != "admin" and client_id != current_user.client_id:
+        client_id = current_user.client_id
     
     query = db.query(Task)
-    if company_id:
-        query = query.filter(Task.company_id == company_id)
+    if client_id:
+        query = query.filter(Task.client_id == client_id)
     
     total_tasks = query.count()
     pending_tasks = query.filter(Task.status == "pendiente").count()
@@ -33,7 +33,7 @@ def get_task_stats(
     overdue_tasks = query.filter(
         and_(
             Task.status.in_(["pendiente", "en_progreso"]),
-            Task.due_date < datetime.utcnow()
+            Task.due_date < datetime.now(timezone.utc)
         )
     ).count()
     
@@ -45,17 +45,17 @@ def get_task_stats(
         overdue_tasks=overdue_tasks
     )
 
-@router.get("/company-stats", response_model=List[CompanyStats])
-def get_company_stats(
+@router.get("/client-stats", response_model=List[ClientStats])
+def get_client_stats(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_admin)
 ):
-    companies = db.query(Company).filter(Company.is_active == True).all()
-    company_stats = []
+    clients = db.query(Client).filter(Client.is_active == True).all()
+    client_stats = []
     
-    for company in companies:
-        # Estadísticas de tareas para esta empresa
-        tasks_query = db.query(Task).filter(Task.company_id == company.id)
+    for client in clients:
+        # Estadísticas de tareas para este cliente
+        tasks_query = db.query(Task).filter(Task.client_id == client.id)
         total_tasks = tasks_query.count()
         pending_tasks = tasks_query.filter(Task.status == "pendiente").count()
         in_progress_tasks = tasks_query.filter(Task.status == "en_progreso").count()
@@ -63,12 +63,12 @@ def get_company_stats(
         overdue_tasks = tasks_query.filter(
             and_(
                 Task.status.in_(["pendiente", "en_progreso"]),
-                Task.due_date < datetime.utcnow()
+                Task.due_date < datetime.now(timezone.utc)
             )
         ).count()
         
         # Número total de usuarios
-        total_users = db.query(User).filter(User.company_id == company.id).count()
+        total_users = db.query(User).filter(User.client_id == client.id).count()
         
         task_stats = TaskStats(
             total_tasks=total_tasks,
@@ -78,13 +78,13 @@ def get_company_stats(
             overdue_tasks=overdue_tasks
         )
         
-        company_stats.append(CompanyStats(
-            company=company,
+        client_stats.append(ClientStats(
+            client=client,
             task_stats=task_stats,
             total_users=total_users
         ))
     
-    return company_stats
+    return client_stats
 
 @router.get("/user-tasks/{user_id}")
 def get_user_task_stats(
@@ -97,8 +97,8 @@ def get_user_task_stats(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Los usuarios solo pueden ver estadísticas de usuarios de su empresa, excepto los admins
-    if current_user.role != "admin" and user.company_id != current_user.company_id:
+    # Los usuarios solo pueden ver estadísticas de usuarios de su cliente, excepto los admins
+    if current_user.role != "admin" and user.client_id != current_user.client_id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
     
     # Estadísticas de tareas asignadas al usuario
@@ -110,7 +110,7 @@ def get_user_task_stats(
     overdue_tasks = tasks_query.filter(
         and_(
             Task.status.in_(["pendiente", "en_progreso"]),
-            Task.due_date < datetime.utcnow()
+            Task.due_date < datetime.now(timezone.utc)
         )
     ).count()
     

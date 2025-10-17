@@ -7,6 +7,9 @@ import toast from 'react-hot-toast';
 import { Plus, Edit, Trash2, Filter } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { StatusBadge, PriorityBadge } from '../components/Badge';
+import ActionButton from '../components/ActionButton';
+import LinkButton from '../components/LinkButton';
 
 function Tasks() {
   const { user } = useAuth();
@@ -91,30 +94,30 @@ function Tasks() {
   const getStatusColor = (status) => {
     switch (status) {
       case 'pendiente':
-        return '#ffc107';
+        return '#f39c12';
       case 'en_progreso':
-        return '#17a2b8';
+        return '#3498db';
       case 'completada':
-        return '#28a745';
+        return '#27ae60';
       case 'cancelada':
-        return '#dc3545';
+        return '#e74c3c';
       default:
-        return '#6c757d';
+        return '#95a5a6';
     }
   };
 
   const getPriorityColor = (priority) => {
     switch (priority) {
       case 'baja':
-        return '#28a745';
+        return '#95a5a6';
       case 'media':
-        return '#ffc107';
+        return '#f39c12';
       case 'alta':
-        return '#fd7e14';
+        return '#e67e22';
       case 'critica':
-        return '#dc3545';
+        return '#c0392b';
       default:
-        return '#6c757d';
+        return '#95a5a6';
     }
   };
 
@@ -137,10 +140,14 @@ function Tasks() {
       
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <h1>Tareas</h1>
-        <Link to="/tasks/new" className="btn btn-primary">
-          <Plus size={16} style={{ marginRight: '8px' }} />
+        <LinkButton
+          to="/tasks/new"
+          variant="primary"
+          size="medium"
+          icon={Plus}
+        >
           Nueva Tarea
-        </Link>
+        </LinkButton>
       </div>
 
       <div className="card">
@@ -190,7 +197,7 @@ function Tasks() {
         overflow: 'hidden'
       }}>
         <div style={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',
           color: 'white',
           padding: '20px 24px',
           borderBottom: '1px solid #f0f0f0'
@@ -266,8 +273,8 @@ function Tasks() {
                   alignItems: 'center',
                   transition: 'background-color 0.2s ease'
                 }}
-                onMouseOver={(e) => e.target.style.backgroundColor = '#f8f9fa'}
-                onMouseOut={(e) => e.target.style.backgroundColor = 'transparent'}>
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f8f9fa'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                   
                   {/* Título y Descripción */}
                   <div>
@@ -296,34 +303,12 @@ function Tasks() {
                   
                   {/* Estado */}
                   <div>
-                    <span style={{
-                      display: 'inline-block',
-                      padding: '6px 12px',
-                      borderRadius: '20px',
-                      fontSize: '12px',
-                      fontWeight: '600',
-                      textTransform: 'uppercase',
-                      backgroundColor: getStatusColor(task.status),
-                      color: 'white'
-                    }}>
-                      {task.status.replace('_', ' ')}
-                    </span>
+                    <StatusBadge status={task.status} />
                   </div>
                   
                   {/* Prioridad */}
                   <div>
-                    <span style={{
-                      display: 'inline-block',
-                      padding: '6px 12px',
-                      borderRadius: '20px',
-                      fontSize: '12px',
-                      fontWeight: '600',
-                      textTransform: 'uppercase',
-                      backgroundColor: getPriorityColor(task.priority),
-                      color: 'white'
-                    }}>
-                      {task.priority}
-                    </span>
+                    <PriorityBadge priority={task.priority} />
                   </div>
                   
                   {/* Asignado a */}
@@ -376,54 +361,29 @@ function Tasks() {
                       color: '#333',
                       fontSize: '14px'
                     }}>
-                      {task.company.name}
+                      {task.client?.name || 'N/A'}
                     </div>
                   </div>
                   
                   {/* Acciones */}
                   <div>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <Link 
+                      <LinkButton
                         to={`/tasks/${task.id}/edit`}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          padding: '8px 12px',
-                          background: '#6c757d',
-                          color: 'white',
-                          borderRadius: '6px',
-                          textDecoration: 'none',
-                          fontSize: '12px',
-                          fontWeight: '500',
-                          transition: 'background-color 0.2s ease'
-                        }}
-                        onMouseOver={(e) => e.target.style.backgroundColor = '#5a6268'}
-                        onMouseOut={(e) => e.target.style.backgroundColor = '#6c757d'}
+                        variant="secondary"
+                        size="small"
+                        icon={Edit}
                       >
-                        <Edit size={14} style={{ marginRight: '4px' }} />
                         Editar
-                      </Link>
-                      <button
+                      </LinkButton>
+                      <ActionButton
+                        variant="danger"
+                        size="small"
                         onClick={() => handleDelete(task.id)}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          padding: '8px 12px',
-                          background: '#dc3545',
-                          color: 'white',
-                          border: 'none',
-                          borderRadius: '6px',
-                          fontSize: '12px',
-                          fontWeight: '500',
-                          cursor: 'pointer',
-                          transition: 'background-color 0.2s ease'
-                        }}
-                        onMouseOver={(e) => e.target.style.backgroundColor = '#c82333'}
-                        onMouseOut={(e) => e.target.style.backgroundColor = '#dc3545'}
+                        icon={Trash2}
                       >
-                        <Trash2 size={14} style={{ marginRight: '4px' }} />
                         Eliminar
-                      </button>
+                      </ActionButton>
                     </div>
                   </div>
                 </div>

@@ -10,7 +10,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import pandas as pd
 from sqlalchemy.orm import Session
 from app.database import SessionLocal, engine
-from app.models import Base, Company, User, Task, TaskStatus, TaskPriority, UserRole
+from app.models import Base, Client, User, Task, TaskStatus, TaskPriority, UserRole
 from app.auth import get_password_hash
 from datetime import datetime
 import numpy as np
@@ -47,21 +47,22 @@ def clean_date(value):
     except:
         return None
 
-def create_colmena_company():
-    """Crear empresa Colmena ARL con configuración específica"""
+def create_colmena_client():
+    """Crear cliente Colmena ARL con configuración específica"""
     db = SessionLocal()
     
     try:
         # Verificar si ya existe
-        existing = db.query(Company).filter(Company.name == "COLMENA ARL").first()
+        existing = db.query(Client).filter(Client.name == "COLMENA ARL").first()
         if existing:
-            print("✅ Empresa COLMENA ARL ya existe")
+            print("✅ Cliente COLMENA ARL ya existe")
             return existing.id
         
-        # Crear empresa con configuración específica de Colmena
-        company = Company(
+        # Crear cliente con configuración específica de Colmena
+        client = Client(
             name="COLMENA ARL",
-            description="Compañía de seguros Colmena ARL - Datos importados desde Excel",
+            description="Cliente Colmena ARL - Datos importados desde Excel",
+            arl="COLMENA ARL",
             is_active=True,
             custom_fields_config=[
                 {
@@ -201,35 +202,36 @@ def create_colmena_company():
             ]
         )
         
-        db.add(company)
+        db.add(client)
         db.commit()
-        db.refresh(company)
+        db.refresh(client)
         
-        print(f"✅ Empresa COLMENA ARL creada con ID: {company.id}")
-        return company.id
+        print(f"✅ Cliente COLMENA ARL creado con ID: {client.id}")
+        return client.id
         
     except Exception as e:
-        print(f"❌ Error al crear empresa Colmena: {e}")
+        print(f"❌ Error al crear cliente Colmena: {e}")
         db.rollback()
         return None
     finally:
         db.close()
 
-def create_positiva_company():
-    """Crear empresa Positiva ARL con configuración específica"""
+def create_positiva_client():
+    """Crear cliente Positiva ARL con configuración específica"""
     db = SessionLocal()
     
     try:
         # Verificar si ya existe
-        existing = db.query(Company).filter(Company.name == "POSITIVA ARL").first()
+        existing = db.query(Client).filter(Client.name == "POSITIVA ARL").first()
         if existing:
-            print("✅ Empresa POSITIVA ARL ya existe")
+            print("✅ Cliente POSITIVA ARL ya existe")
             return existing.id
         
-        # Crear empresa con configuración específica de Positiva
-        company = Company(
+        # Crear cliente con configuración específica de Positiva
+        client = Client(
             name="POSITIVA ARL",
-            description="Compañía de seguros Positiva ARL - Datos importados desde Excel",
+            description="Cliente Positiva ARL - Datos importados desde Excel",
+            arl="POSITIVA ARL",
             is_active=True,
             custom_fields_config=[
                 {
@@ -352,21 +354,21 @@ def create_positiva_company():
             ]
         )
         
-        db.add(company)
+        db.add(client)
         db.commit()
-        db.refresh(company)
+        db.refresh(client)
         
-        print(f"✅ Empresa POSITIVA ARL creada con ID: {company.id}")
-        return company.id
+        print(f"✅ Cliente POSITIVA ARL creado con ID: {client.id}")
+        return client.id
         
     except Exception as e:
-        print(f"❌ Error al crear empresa Positiva: {e}")
+        print(f"❌ Error al crear cliente Positiva: {e}")
         db.rollback()
         return None
     finally:
         db.close()
 
-def import_colmena_data(file_path, company_id, admin_user_id):
+def import_colmena_data(file_path, client_id, admin_user_id):
     """Importar datos de Colmena ARL"""
     db = SessionLocal()
     
@@ -387,7 +389,7 @@ def import_colmena_data(file_path, company_id, admin_user_id):
                 'description': clean_string(row.get('DETALLE ACTIVIDAD'), 1000),
                 'status': TaskStatus.PENDIENTE,
                 'priority': TaskPriority.MEDIA,
-                'company_id': company_id,
+                'client_id': client_id,
                 'created_by': admin_user_id,
                 'custom_fields': {
                     'nit': clean_string(row.get('NIT'), 20),
@@ -435,7 +437,7 @@ def import_colmena_data(file_path, company_id, admin_user_id):
     finally:
         db.close()
 
-def import_positiva_data(file_path, company_id, admin_user_id):
+def import_positiva_data(file_path, client_id, admin_user_id):
     """Importar datos de Positiva ARL"""
     db = SessionLocal()
     
@@ -456,7 +458,7 @@ def import_positiva_data(file_path, company_id, admin_user_id):
                 'description': f"Empresa: {clean_string(row.get('EMPRESA'), 100)} - Código: {clean_string(row.get('CODIGO'), 50)}",
                 'status': TaskStatus.PENDIENTE,
                 'priority': TaskPriority.MEDIA,
-                'company_id': company_id,
+                'client_id': client_id,
                 'created_by': admin_user_id,
                 'custom_fields': {
                     'nit': clean_string(row.get('NIT'), 20),
@@ -521,12 +523,12 @@ def main():
     finally:
         db.close()
     
-    # Crear empresas con configuración específica
-    colmena_id = create_colmena_company()
-    positiva_id = create_positiva_company()
+    # Crear clientes con configuración específica
+    colmena_id = create_colmena_client()
+    positiva_id = create_positiva_client()
     
     if not colmena_id or not positiva_id:
-        print("❌ Error al crear empresas")
+        print("❌ Error al crear clientes")
         return
     
     # Importar datos de Colmena

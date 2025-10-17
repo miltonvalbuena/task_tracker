@@ -52,10 +52,10 @@ function Navbar() {
               <>
                 <li>
                   <Link 
-                    to="/companies" 
-                    className={isActive('/companies') ? 'active' : ''}
+                    to="/clients" 
+                    className={isActive('/clients') ? 'active' : ''}
                   >
-                    Empresas
+                    Clientes
                   </Link>
                 </li>
                 <li>

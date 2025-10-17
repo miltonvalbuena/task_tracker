@@ -9,7 +9,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlalchemy.orm import Session
 from app.database import SessionLocal, engine
-from app.models import Base, Company, User, Task, TaskStatus, TaskPriority, UserRole
+from app.models import Base, ARL, Client, User, Task, TaskStatus, TaskPriority, UserRole
 from app.auth import get_password_hash
 from datetime import datetime, timedelta
 
@@ -21,37 +21,102 @@ def create_sample_data():
     
     try:
         # Verificar si ya existen datos
-        if db.query(Company).first():
+        if db.query(ARL).first():
             print("Los datos de ejemplo ya existen. Saltando inicialización.")
             return
         
-        # Crear empresas
-        companies = [
-            Company(
+        # Crear ARLs
+        arls = [
+            ARL(
                 name="COLMENA ARL",
-                description="Compañía de seguros Colmena ARL",
+                description="Administradora de Riesgos Laborales Colmena",
                 is_active=True
             ),
-            Company(
+            ARL(
                 name="POSITIVA ARL",
-                description="Compañía de seguros Positiva ARL",
+                description="Administradora de Riesgos Laborales Positiva",
                 is_active=True
             ),
-            Company(
+            ARL(
                 name="SURA ARL",
-                description="Compañía de seguros Sura ARL",
+                description="Administradora de Riesgos Laborales Sura",
                 is_active=True
             )
         ]
-        
-        for company in companies:
-            db.add(company)
+
+        for arl in arls:
+            db.add(arl)
         db.commit()
-        
-        # Obtener empresas creadas
-        colmena = db.query(Company).filter(Company.name == "COLMENA ARL").first()
-        positiva = db.query(Company).filter(Company.name == "POSITIVA ARL").first()
-        sura = db.query(Company).filter(Company.name == "SURA ARL").first()
+
+        # Obtener ARLs creadas
+        colmena_arl = db.query(ARL).filter(ARL.name == "COLMENA ARL").first()
+        positiva_arl = db.query(ARL).filter(ARL.name == "POSITIVA ARL").first()
+        sura_arl = db.query(ARL).filter(ARL.name == "SURA ARL").first()
+
+        # Crear clientes de ejemplo para cada ARL
+        clients = [
+            # Clientes de COLMENA ARL
+            Client(
+                name="ACTIVIDAD MASIVA - P & S VALCAS SOCIEDAD ANONIMA - GRUPO VALCAS SA.",
+                nit="900123456-1",
+                description="Cliente de COLMENA ARL",
+                arl_id=colmena_arl.id,
+                is_active=True
+            ),
+            Client(
+                name="APARTAMENTOS BONNAVISTA S.A.S.",
+                nit="900234567-2",
+                description="Cliente de COLMENA ARL",
+                arl_id=colmena_arl.id,
+                is_active=True
+            ),
+            Client(
+                name="AUTOMOTRIZ CALDAS MOTOR S.A.",
+                nit="900345678-3",
+                description="Cliente de COLMENA ARL",
+                arl_id=colmena_arl.id,
+                is_active=True
+            ),
+            # Clientes de POSITIVA ARL
+            Client(
+                name="ASOCIACION CABLE AEREO MANIZALES",
+                nit="900315506-0",
+                description="Cliente de POSITIVA ARL",
+                arl_id=positiva_arl.id,
+                is_active=True
+            ),
+            Client(
+                name="ESE HOSPITAL SAN VICENTE DE PAUL",
+                nit="800191101-0",
+                description="Cliente de POSITIVA ARL",
+                arl_id=positiva_arl.id,
+                is_active=True
+            ),
+            Client(
+                name="INDUSTRIA LICORERA DE CALDAS",
+                nit="890801167-0",
+                description="Cliente de POSITIVA ARL",
+                arl_id=positiva_arl.id,
+                is_active=True
+            ),
+            # Clientes de SURA ARL
+            Client(
+                name="EMPRESA DE SERVICIOS PUBLICOS DE CALDAS",
+                nit="890123456-7",
+                description="Cliente de SURA ARL",
+                arl_id=sura_arl.id,
+                is_active=True
+            )
+        ]
+
+        for client in clients:
+            db.add(client)
+        db.commit()
+
+        # Obtener algunos clientes para crear usuarios
+        colmena_client = db.query(Client).filter(Client.name.like("%VALCAS%")).first()
+        positiva_client = db.query(Client).filter(Client.name.like("%CABLE AEREO%")).first()
+        sura_client = db.query(Client).filter(Client.name.like("%SERVICIOS PUBLICOS%")).first()
         
         # Crear usuarios
         users = [
@@ -62,7 +127,7 @@ def create_sample_data():
                 full_name="Administrador del Sistema",
                 hashed_password=get_password_hash("admin123"),
                 role=UserRole.ADMIN,
-                company_id=colmena.id,
+                client_id=colmena_client.id,
                 is_active=True
             ),
             
@@ -73,7 +138,7 @@ def create_sample_data():
                 full_name="Manager Colmena",
                 hashed_password=get_password_hash("manager123"),
                 role=UserRole.MANAGER,
-                company_id=colmena.id,
+                client_id=colmena_client.id,
                 is_active=True
             ),
             User(
@@ -82,7 +147,7 @@ def create_sample_data():
                 full_name="Usuario Colmena",
                 hashed_password=get_password_hash("user123"),
                 role=UserRole.USER,
-                company_id=colmena.id,
+                client_id=colmena_client.id,
                 is_active=True
             ),
             
@@ -93,7 +158,7 @@ def create_sample_data():
                 full_name="Manager Positiva",
                 hashed_password=get_password_hash("manager123"),
                 role=UserRole.MANAGER,
-                company_id=positiva.id,
+                client_id=positiva_client.id,
                 is_active=True
             ),
             User(
@@ -102,7 +167,7 @@ def create_sample_data():
                 full_name="Usuario Positiva",
                 hashed_password=get_password_hash("user123"),
                 role=UserRole.USER,
-                company_id=positiva.id,
+                client_id=positiva_client.id,
                 is_active=True
             ),
             
@@ -113,7 +178,7 @@ def create_sample_data():
                 full_name="Manager Sura",
                 hashed_password=get_password_hash("manager123"),
                 role=UserRole.MANAGER,
-                company_id=sura.id,
+                client_id=sura_client.id,
                 is_active=True
             ),
             User(
@@ -122,7 +187,7 @@ def create_sample_data():
                 full_name="Usuario Sura",
                 hashed_password=get_password_hash("user123"),
                 role=UserRole.USER,
-                company_id=sura.id,
+                client_id=sura_client.id,
                 is_active=True
             )
         ]
@@ -149,7 +214,7 @@ def create_sample_data():
                 status=TaskStatus.PENDIENTE,
                 priority=TaskPriority.ALTA,
                 due_date=datetime.utcnow() + timedelta(days=7),
-                company_id=colmena.id,
+                client_id=colmena_client.id,
                 assigned_to=user_colmena.id,
                 created_by=manager_colmena.id
             ),
@@ -159,7 +224,7 @@ def create_sample_data():
                 status=TaskStatus.EN_PROGRESO,
                 priority=TaskPriority.CRITICA,
                 due_date=datetime.utcnow() + timedelta(days=3),
-                company_id=colmena.id,
+                client_id=colmena_client.id,
                 assigned_to=user_colmena.id,
                 created_by=manager_colmena.id
             ),
@@ -170,7 +235,7 @@ def create_sample_data():
                 priority=TaskPriority.MEDIA,
                 due_date=datetime.utcnow() - timedelta(days=1),
                 completed_at=datetime.utcnow() - timedelta(hours=2),
-                company_id=colmena.id,
+                client_id=colmena_client.id,
                 assigned_to=user_colmena.id,
                 created_by=manager_colmena.id
             ),
@@ -182,7 +247,7 @@ def create_sample_data():
                 status=TaskStatus.PENDIENTE,
                 priority=TaskPriority.ALTA,
                 due_date=datetime.utcnow() + timedelta(days=14),
-                company_id=positiva.id,
+                client_id=positiva_client.id,
                 assigned_to=user_positiva.id,
                 created_by=manager_positiva.id
             ),
@@ -192,7 +257,7 @@ def create_sample_data():
                 status=TaskStatus.EN_PROGRESO,
                 priority=TaskPriority.MEDIA,
                 due_date=datetime.utcnow() + timedelta(days=10),
-                company_id=positiva.id,
+                client_id=positiva_client.id,
                 assigned_to=user_positiva.id,
                 created_by=manager_positiva.id
             ),
@@ -204,7 +269,7 @@ def create_sample_data():
                 status=TaskStatus.PENDIENTE,
                 priority=TaskPriority.CRITICA,
                 due_date=datetime.utcnow() + timedelta(days=21),
-                company_id=sura.id,
+                client_id=sura_client.id,
                 assigned_to=user_sura.id,
                 created_by=manager_sura.id
             ),
@@ -215,7 +280,7 @@ def create_sample_data():
                 priority=TaskPriority.BAJA,
                 due_date=datetime.utcnow() - timedelta(days=5),
                 completed_at=datetime.utcnow() - timedelta(days=1),
-                company_id=sura.id,
+                client_id=sura_client.id,
                 assigned_to=user_sura.id,
                 created_by=manager_sura.id
             )
@@ -246,3 +311,4 @@ def create_sample_data():
 
 if __name__ == "__main__":
     create_sample_data()
+

@@ -11,6 +11,7 @@ import {
   AlertCircle,
   TrendingUp
 } from 'lucide-react';
+import ActionButton from '../components/ActionButton';
 import { 
   BarChart, 
   Bar, 
@@ -103,9 +104,9 @@ function Reports() {
   };
 
   const pieData = stats ? [
-    { name: 'Pendientes', value: stats.pending_tasks, color: '#ffc107' },
-    { name: 'En Progreso', value: stats.in_progress_tasks, color: '#17a2b8' },
-    { name: 'Completadas', value: stats.completed_tasks, color: '#28a745' },
+    { name: 'Pendientes', value: stats.pending_tasks, color: '#f39c12' },
+    { name: 'En Progreso', value: stats.in_progress_tasks, color: '#3498db' },
+    { name: 'Completadas', value: stats.completed_tasks, color: '#27ae60' },
   ] : [];
 
   const userTaskData = users?.map(userItem => {
@@ -157,23 +158,23 @@ function Reports() {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
           <div style={{ textAlign: 'center', padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-            <CheckCircle size={32} color="#28a745" />
-            <h3 style={{ margin: '8px 0', color: '#28a745' }}>{stats?.completed_tasks || 0}</h3>
+            <CheckCircle size={32} color="#27ae60" />
+            <h3 style={{ margin: '8px 0', color: '#27ae60' }}>{stats?.completed_tasks || 0}</h3>
             <p style={{ margin: 0, color: '#666' }}>Tareas Completadas</p>
           </div>
           <div style={{ textAlign: 'center', padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-            <Clock size={32} color="#ffc107" />
-            <h3 style={{ margin: '8px 0', color: '#ffc107' }}>{stats?.pending_tasks || 0}</h3>
+            <Clock size={32} color="#f39c12" />
+            <h3 style={{ margin: '8px 0', color: '#f39c12' }}>{stats?.pending_tasks || 0}</h3>
             <p style={{ margin: 0, color: '#666' }}>Tareas Pendientes</p>
           </div>
           <div style={{ textAlign: 'center', padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-            <TrendingUp size={32} color="#17a2b8" />
-            <h3 style={{ margin: '8px 0', color: '#17a2b8' }}>{stats?.in_progress_tasks || 0}</h3>
+            <TrendingUp size={32} color="#3498db" />
+            <h3 style={{ margin: '8px 0', color: '#3498db' }}>{stats?.in_progress_tasks || 0}</h3>
             <p style={{ margin: 0, color: '#666' }}>En Progreso</p>
           </div>
           <div style={{ textAlign: 'center', padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-            <AlertCircle size={32} color="#dc3545" />
-            <h3 style={{ margin: '8px 0', color: '#dc3545' }}>{stats?.overdue_tasks || 0}</h3>
+            <AlertCircle size={32} color="#e74c3c" />
+            <h3 style={{ margin: '8px 0', color: '#e74c3c' }}>{stats?.overdue_tasks || 0}</h3>
             <p style={{ margin: 0, color: '#666' }}>Tareas Vencidas</p>
           </div>
         </div>
@@ -194,7 +195,7 @@ function Reports() {
                 labelLine={false}
                 label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                 outerRadius={80}
-                fill="#8884d8"
+                fill="#3498db"
                 dataKey="value"
               >
                 {pieData.map((entry, index) => (
@@ -216,8 +217,8 @@ function Reports() {
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="total" fill="#8884d8" name="Total" />
-              <Bar dataKey="completadas" fill="#82ca9d" name="Completadas" />
+              <Bar dataKey="total" fill="#3498db" name="Total" />
+              <Bar dataKey="completadas" fill="#27ae60" name="Completadas" />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -232,8 +233,8 @@ function Reports() {
               <XAxis dataKey="month" />
               <YAxis />
               <Tooltip />
-              <Line type="monotone" dataKey="completadas" stroke="#82ca9d" name="Completadas" />
-              <Line type="monotone" dataKey="pendientes" stroke="#ffc107" name="Pendientes" />
+              <Line type="monotone" dataKey="completadas" stroke="#27ae60" name="Completadas" />
+              <Line type="monotone" dataKey="pendientes" stroke="#f39c12" name="Pendientes" />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -245,7 +246,7 @@ function Reports() {
             </div>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={companyStats.map(stat => ({
-                name: stat.company.name,
+                name: stat.client?.name || 'N/A',
                 total: stat.task_stats.total_tasks,
                 completadas: stat.task_stats.completed_tasks,
               }))}>
@@ -253,8 +254,8 @@ function Reports() {
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="total" fill="#8884d8" name="Total" />
-                <Bar dataKey="completadas" fill="#82ca9d" name="Completadas" />
+                <Bar dataKey="total" fill="#3498db" name="Total" />
+                <Bar dataKey="completadas" fill="#27ae60" name="Completadas" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -267,28 +268,31 @@ function Reports() {
           <h3 className="card-title">Exportar Datos</h3>
         </div>
         <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-          <button
+          <ActionButton
+            variant="primary"
+            size="medium"
             onClick={() => exportToCSV(tasks || [], `tareas_${dateRange.start}_${dateRange.end}.csv`)}
-            className="btn btn-primary"
+            icon={Download}
           >
-            <Download size={16} style={{ marginRight: '8px' }} />
             Exportar Tareas
-          </button>
-          <button
+          </ActionButton>
+          <ActionButton
+            variant="secondary"
+            size="medium"
             onClick={() => exportToCSV(users || [], 'usuarios.csv')}
-            className="btn btn-secondary"
+            icon={Download}
           >
-            <Download size={16} style={{ marginRight: '8px' }} />
             Exportar Usuarios
-          </button>
+          </ActionButton>
           {user?.role === 'admin' && (
-            <button
+            <ActionButton
+              variant="secondary"
+              size="medium"
               onClick={() => exportToCSV(companyStats || [], 'empresas.csv')}
-              className="btn btn-secondary"
+              icon={Download}
             >
-              <Download size={16} style={{ marginRight: '8px' }} />
               Exportar Empresas
-            </button>
+            </ActionButton>
           )}
         </div>
       </div>

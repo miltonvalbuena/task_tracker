@@ -13,12 +13,12 @@ function SystemConfig() {
   const queryClient = useQueryClient();
 
   const [systemConfig, setSystemConfig] = useState({
-    company_name: config.company.name,
-    company_nit: config.company.nit,
-    company_address: config.company.address,
-    company_phone: config.company.phone,
-    company_email: config.company.email,
-    company_website: config.company.website,
+    company_name: config.company?.name || '',
+    company_nit: config.company?.nit || '',
+    company_address: config.company?.address || '',
+    company_phone: config.company?.phone || '',
+    company_email: config.company?.email || '',
+    company_website: config.company?.website || '',
     database_host: '',
     database_port: '',
     database_name: '',
@@ -131,12 +131,12 @@ function SystemConfig() {
     }}>
       {/* Header */}
       <div style={{ 
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        background: 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)',
         color: 'white',
         padding: '24px',
         borderRadius: '12px',
         marginBottom: '30px',
-        boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)'
+        boxShadow: '0 8px 32px rgba(44, 62, 80, 0.3)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <Settings size={32} />
@@ -180,21 +180,21 @@ function SystemConfig() {
                   gap: '8px',
                   fontSize: '16px',
                   fontWeight: '600',
-                  color: activeTab === tab.id ? '#007bff' : '#6c757d',
-                  borderBottom: activeTab === tab.id ? '3px solid #007bff' : '3px solid transparent',
+                  color: activeTab === tab.id ? '#3498db' : '#6c757d',
+                  borderBottom: activeTab === tab.id ? '3px solid #3498db' : '3px solid transparent',
                   transition: 'all 0.3s ease',
                   whiteSpace: 'nowrap'
                 }}
-                onMouseOver={(e) => {
+                onMouseEnter={(e) => {
                   if (activeTab !== tab.id) {
-                    e.target.style.color = '#007bff';
-                    e.target.style.background = '#f8f9fa';
+                    e.currentTarget.style.color = '#3498db';
+                    e.currentTarget.style.background = '#f8f9fa';
                   }
                 }}
-                onMouseOut={(e) => {
+                onMouseLeave={(e) => {
                   if (activeTab !== tab.id) {
-                    e.target.style.color = '#6c757d';
-                    e.target.style.background = 'none';
+                    e.currentTarget.style.color = '#6c757d';
+                    e.currentTarget.style.background = 'none';
                   }
                 }}
               >
@@ -215,7 +215,7 @@ function SystemConfig() {
                   marginBottom: '24px', 
                   fontSize: '20px',
                   fontWeight: '600',
-                  borderBottom: '3px solid #6f42c1',
+                  borderBottom: '3px solid #3498db',
                   paddingBottom: '8px'
                 }}>
                   Configuración del Logo
@@ -264,9 +264,9 @@ function SystemConfig() {
                         transition: 'all 0.3s ease'
                       }}
                       onFocus={(e) => {
-                        e.target.style.borderColor = '#6f42c1';
+                        e.target.style.borderColor = '#3498db';
                         e.target.style.background = 'white';
-                        e.target.style.boxShadow = '0 0 0 3px rgba(111,66,193,0.1)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(52,152,219,0.1)';
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = '#e1e5e9';
@@ -303,9 +303,9 @@ function SystemConfig() {
                         transition: 'all 0.3s ease'
                       }}
                       onFocus={(e) => {
-                        e.target.style.borderColor = '#6f42c1';
+                        e.target.style.borderColor = '#3498db';
                         e.target.style.background = 'white';
-                        e.target.style.boxShadow = '0 0 0 3px rgba(111,66,193,0.1)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(52,152,219,0.1)';
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = '#e1e5e9';
@@ -378,7 +378,7 @@ function SystemConfig() {
                   marginBottom: '24px', 
                   fontSize: '20px',
                   fontWeight: '600',
-                  borderBottom: '3px solid #007bff',
+                  borderBottom: '3px solid #3498db',
                   paddingBottom: '8px'
                 }}>
                   Información de la Empresa
@@ -414,9 +414,9 @@ function SystemConfig() {
                         transition: 'all 0.3s ease'
                       }}
                       onFocus={(e) => {
-                        e.target.style.borderColor = '#007bff';
+                        e.target.style.borderColor = '#3498db';
                         e.target.style.background = 'white';
-                        e.target.style.boxShadow = '0 0 0 3px rgba(0,123,255,0.1)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(52,152,219,0.1)';
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = '#e1e5e9';
@@ -453,9 +453,9 @@ function SystemConfig() {
                         transition: 'all 0.3s ease'
                       }}
                       onFocus={(e) => {
-                        e.target.style.borderColor = '#007bff';
+                        e.target.style.borderColor = '#3498db';
                         e.target.style.background = 'white';
-                        e.target.style.boxShadow = '0 0 0 3px rgba(0,123,255,0.1)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(52,152,219,0.1)';
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = '#e1e5e9';
@@ -491,9 +491,9 @@ function SystemConfig() {
                         transition: 'all 0.3s ease'
                       }}
                       onFocus={(e) => {
-                        e.target.style.borderColor = '#007bff';
+                        e.target.style.borderColor = '#3498db';
                         e.target.style.background = 'white';
-                        e.target.style.boxShadow = '0 0 0 3px rgba(0,123,255,0.1)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(52,152,219,0.1)';
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = '#e1e5e9';
@@ -529,9 +529,9 @@ function SystemConfig() {
                         transition: 'all 0.3s ease'
                       }}
                       onFocus={(e) => {
-                        e.target.style.borderColor = '#007bff';
+                        e.target.style.borderColor = '#3498db';
                         e.target.style.background = 'white';
-                        e.target.style.boxShadow = '0 0 0 3px rgba(0,123,255,0.1)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(52,152,219,0.1)';
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = '#e1e5e9';
@@ -567,9 +567,9 @@ function SystemConfig() {
                         transition: 'all 0.3s ease'
                       }}
                       onFocus={(e) => {
-                        e.target.style.borderColor = '#007bff';
+                        e.target.style.borderColor = '#3498db';
                         e.target.style.background = 'white';
-                        e.target.style.boxShadow = '0 0 0 3px rgba(0,123,255,0.1)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(52,152,219,0.1)';
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = '#e1e5e9';
@@ -608,9 +608,9 @@ function SystemConfig() {
                         transition: 'all 0.3s ease'
                       }}
                       onFocus={(e) => {
-                        e.target.style.borderColor = '#007bff';
+                        e.target.style.borderColor = '#3498db';
                         e.target.style.background = 'white';
-                        e.target.style.boxShadow = '0 0 0 3px rgba(0,123,255,0.1)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(52,152,219,0.1)';
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = '#e1e5e9';
@@ -631,7 +631,7 @@ function SystemConfig() {
                   marginBottom: '24px', 
                   fontSize: '20px',
                   fontWeight: '600',
-                  borderBottom: '3px solid #28a745',
+                  borderBottom: '3px solid #27ae60',
                   paddingBottom: '8px'
                 }}>
                   Configuración de Base de Datos
@@ -667,9 +667,9 @@ function SystemConfig() {
                         transition: 'all 0.3s ease'
                       }}
                       onFocus={(e) => {
-                        e.target.style.borderColor = '#28a745';
+                        e.target.style.borderColor = '#27ae60';
                         e.target.style.background = 'white';
-                        e.target.style.boxShadow = '0 0 0 3px rgba(40,167,69,0.1)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(39,174,96,0.1)';
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = '#e1e5e9';
@@ -705,9 +705,9 @@ function SystemConfig() {
                         transition: 'all 0.3s ease'
                       }}
                       onFocus={(e) => {
-                        e.target.style.borderColor = '#28a745';
+                        e.target.style.borderColor = '#27ae60';
                         e.target.style.background = 'white';
-                        e.target.style.boxShadow = '0 0 0 3px rgba(40,167,69,0.1)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(39,174,96,0.1)';
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = '#e1e5e9';
@@ -743,9 +743,9 @@ function SystemConfig() {
                         transition: 'all 0.3s ease'
                       }}
                       onFocus={(e) => {
-                        e.target.style.borderColor = '#28a745';
+                        e.target.style.borderColor = '#27ae60';
                         e.target.style.background = 'white';
-                        e.target.style.boxShadow = '0 0 0 3px rgba(40,167,69,0.1)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(39,174,96,0.1)';
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = '#e1e5e9';
@@ -781,9 +781,9 @@ function SystemConfig() {
                         transition: 'all 0.3s ease'
                       }}
                       onFocus={(e) => {
-                        e.target.style.borderColor = '#28a745';
+                        e.target.style.borderColor = '#27ae60';
                         e.target.style.background = 'white';
-                        e.target.style.boxShadow = '0 0 0 3px rgba(40,167,69,0.1)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(39,174,96,0.1)';
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = '#e1e5e9';
@@ -804,7 +804,7 @@ function SystemConfig() {
                   marginBottom: '24px', 
                   fontSize: '20px',
                   fontWeight: '600',
-                  borderBottom: '3px solid #ffc107',
+                  borderBottom: '3px solid #f39c12',
                   paddingBottom: '8px'
                 }}>
                   Configuración del Sistema
@@ -840,9 +840,9 @@ function SystemConfig() {
                         transition: 'all 0.3s ease'
                       }}
                       onFocus={(e) => {
-                        e.target.style.borderColor = '#ffc107';
+                        e.target.style.borderColor = '#f39c12';
                         e.target.style.background = 'white';
-                        e.target.style.boxShadow = '0 0 0 3px rgba(255,193,7,0.1)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(243,156,18,0.1)';
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = '#e1e5e9';
@@ -882,9 +882,9 @@ function SystemConfig() {
                         transition: 'all 0.3s ease'
                       }}
                       onFocus={(e) => {
-                        e.target.style.borderColor = '#ffc107';
+                        e.target.style.borderColor = '#f39c12';
                         e.target.style.background = 'white';
-                        e.target.style.boxShadow = '0 0 0 3px rgba(255,193,7,0.1)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(243,156,18,0.1)';
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = '#e1e5e9';
@@ -923,9 +923,9 @@ function SystemConfig() {
                         transition: 'all 0.3s ease'
                       }}
                       onFocus={(e) => {
-                        e.target.style.borderColor = '#ffc107';
+                        e.target.style.borderColor = '#f39c12';
                         e.target.style.background = 'white';
-                        e.target.style.boxShadow = '0 0 0 3px rgba(255,193,7,0.1)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(243,156,18,0.1)';
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = '#e1e5e9';
@@ -962,9 +962,9 @@ function SystemConfig() {
                         transition: 'all 0.3s ease'
                       }}
                       onFocus={(e) => {
-                        e.target.style.borderColor = '#ffc107';
+                        e.target.style.borderColor = '#f39c12';
                         e.target.style.background = 'white';
-                        e.target.style.boxShadow = '0 0 0 3px rgba(255,193,7,0.1)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(243,156,18,0.1)';
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = '#e1e5e9';
@@ -1027,7 +1027,7 @@ function SystemConfig() {
                   marginBottom: '24px', 
                   fontSize: '20px',
                   fontWeight: '600',
-                  borderBottom: '3px solid #dc3545',
+                  borderBottom: '3px solid #e74c3c',
                   paddingBottom: '8px'
                 }}>
                   Configuración de Usuarios
@@ -1105,9 +1105,9 @@ function SystemConfig() {
                         transition: 'all 0.3s ease'
                       }}
                       onFocus={(e) => {
-                        e.target.style.borderColor = '#dc3545';
+                        e.target.style.borderColor = '#e74c3c';
                         e.target.style.background = 'white';
-                        e.target.style.boxShadow = '0 0 0 3px rgba(220,53,69,0.1)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(231,76,60,0.1)';
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = '#e1e5e9';
@@ -1143,9 +1143,9 @@ function SystemConfig() {
                         transition: 'all 0.3s ease'
                       }}
                       onFocus={(e) => {
-                        e.target.style.borderColor = '#dc3545';
+                        e.target.style.borderColor = '#e74c3c';
                         e.target.style.background = 'white';
-                        e.target.style.boxShadow = '0 0 0 3px rgba(220,53,69,0.1)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(231,76,60,0.1)';
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = '#e1e5e9';
@@ -1181,9 +1181,9 @@ function SystemConfig() {
                         transition: 'all 0.3s ease'
                       }}
                       onFocus={(e) => {
-                        e.target.style.borderColor = '#dc3545';
+                        e.target.style.borderColor = '#e74c3c';
                         e.target.style.background = 'white';
-                        e.target.style.boxShadow = '0 0 0 3px rgba(220,53,69,0.1)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(231,76,60,0.1)';
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = '#e1e5e9';
@@ -1219,9 +1219,9 @@ function SystemConfig() {
                         transition: 'all 0.3s ease'
                       }}
                       onFocus={(e) => {
-                        e.target.style.borderColor = '#dc3545';
+                        e.target.style.borderColor = '#e74c3c';
                         e.target.style.background = 'white';
-                        e.target.style.boxShadow = '0 0 0 3px rgba(220,53,69,0.1)';
+                        e.target.style.boxShadow = '0 0 0 3px rgba(231,76,60,0.1)';
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = '#e1e5e9';
@@ -1261,13 +1261,13 @@ function SystemConfig() {
                   gap: '8px',
                   boxShadow: '0 4px 15px rgba(0,123,255,0.3)'
                 }}
-                onMouseOver={(e) => {
-                  e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = '0 6px 20px rgba(0,123,255,0.4)';
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,123,255,0.4)';
                 }}
-                onMouseOut={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 4px 15px rgba(0,123,255,0.3)';
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,123,255,0.3)';
                 }}
               >
                 <Save size={16} />

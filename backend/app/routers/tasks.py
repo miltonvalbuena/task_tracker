@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
 from datetime import datetime
 from app.database import get_db
-from app.models import Task, User, Company
+from app.models import Task, User, Client
 from app.schemas import Task as TaskSchema, TaskCreate, TaskUpdate
 from app.auth import get_current_active_user
 
@@ -15,18 +15,18 @@ def create_task(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_active_user)
 ):
-    # Verificar que la empresa existe
-    company = db.query(Company).filter(Company.id == task.company_id).first()
-    if not company:
-        raise HTTPException(status_code=404, detail="Company not found")
+    # Verificar que el cliente existe
+    client = db.query(Client).filter(Client.id == task.client_id).first()
+    if not client:
+        raise HTTPException(status_code=404, detail="Client not found")
     
-    # Verificar que el usuario asignado existe y pertenece a la empresa
+    # Verificar que el usuario asignado existe y pertenece al cliente
     if task.assigned_to:
         assigned_user = db.query(User).filter(User.id == task.assigned_to).first()
         if not assigned_user:
             raise HTTPException(status_code=404, detail="Assigned user not found")
-        if assigned_user.company_id != task.company_id:
-            raise HTTPException(status_code=400, detail="Assigned user must belong to the same company")
+        if assigned_user.client_id != task.client_id:
+            raise HTTPException(status_code=400, detail="Assigned user must belong to the same client")
     
     db_task = Task(
         title=task.title,
@@ -34,7 +34,7 @@ def create_task(
         status=task.status,
         priority=task.priority,
         due_date=task.due_date,
-        company_id=task.company_id,
+        client_id=task.client_id,
         assigned_to=task.assigned_to,
         created_by=current_user.id
     )
@@ -47,7 +47,7 @@ def create_task(
 def read_tasks(
     skip: int = 0,
     limit: int = 100,
-    company_id: Optional[str] = Query(None),
+    client_id: Optional[str] = Query(None),
     assigned_to: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
     db: Session = Depends(get_db),
@@ -55,14 +55,14 @@ def read_tasks(
 ):
     query = db.query(Task)
     
-    # Los usuarios solo pueden ver tareas de su empresa, excepto los admins
+    # Los usuarios solo pueden ver tareas de su cliente, excepto los admins
     if current_user.role != "admin":
-        query = query.filter(Task.company_id == current_user.company_id)
+        query = query.filter(Task.client_id == current_user.client_id)
     
-    if company_id and company_id.strip():
+    if client_id and client_id.strip():
         try:
-            company_id_int = int(company_id)
-            query = query.filter(Task.company_id == company_id_int)
+            client_id_int = int(client_id)
+            query = query.filter(Task.client_id == client_id_int)
         except ValueError:
             pass
     
@@ -78,7 +78,7 @@ def read_tasks(
     
     tasks = query.options(
         joinedload(Task.assigned_user),
-        joinedload(Task.company),
+        joinedload(Task.client),
         joinedload(Task.created_by_user)
     ).offset(skip).limit(limit).all()
     return tasks
@@ -91,14 +91,14 @@ def read_task(
 ):
     task = db.query(Task).options(
         joinedload(Task.assigned_user),
-        joinedload(Task.company),
+        joinedload(Task.client),
         joinedload(Task.created_by_user)
     ).filter(Task.id == task_id).first()
     if task is None:
         raise HTTPException(status_code=404, detail="Task not found")
     
-    # Los usuarios solo pueden ver tareas de su empresa, excepto los admins
-    if current_user.role != "admin" and task.company_id != current_user.company_id:
+    # Los usuarios solo pueden ver tareas de su cliente, excepto los admins
+    if current_user.role != "admin" and task.client_id != current_user.client_id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
     
     return task
@@ -114,8 +114,8 @@ def update_task(
     if task is None:
         raise HTTPException(status_code=404, detail="Task not found")
     
-    # Los usuarios solo pueden actualizar tareas de su empresa, excepto los admins
-    if current_user.role != "admin" and task.company_id != current_user.company_id:
+    # Los usuarios solo pueden actualizar tareas de su cliente, excepto los admins
+    if current_user.role != "admin" and task.client_id != current_user.client_id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
     
     update_data = task_update.dict(exclude_unset=True)
@@ -141,8 +141,8 @@ def delete_task(
     if task is None:
         raise HTTPException(status_code=404, detail="Task not found")
     
-    # Los usuarios solo pueden eliminar tareas de su empresa, excepto los admins
-    if current_user.role != "admin" and task.company_id != current_user.company_id:
+    # Los usuarios solo pueden eliminar tareas de su cliente, excepto los admins
+    if current_user.role != "admin" and task.client_id != current_user.client_id:
         raise HTTPException(status_code=403, detail="Not enough permissions")
     
     db.delete(task)

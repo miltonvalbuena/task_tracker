@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from app.routers import auth, companies, users, tasks, dashboard
+from app.routers import auth, arls, clients, users, tasks, dashboard
 
 app = FastAPI(
     title="Task Tracker API",
@@ -23,7 +23,8 @@ app.add_middleware(
 
 # Incluir routers ANTES del catch-all route
 app.include_router(auth.router, prefix="/api/v1")
-app.include_router(companies.router, prefix="/api/v1")
+app.include_router(arls.router, prefix="/api/v1")
+app.include_router(clients.router, prefix="/api/v1")
 app.include_router(users.router, prefix="/api/v1")
 app.include_router(tasks.router, prefix="/api/v1")
 app.include_router(dashboard.router, prefix="/api/v1")
@@ -81,8 +82,12 @@ if os.path.exists(frontend_path):
     def serve_users():
         return FileResponse(f"{frontend_path}/index.html")
     
-    @app.get("/companies")
-    def serve_companies():
+    @app.get("/clients")
+    def serve_clients():
+        return FileResponse(f"{frontend_path}/index.html")
+    
+    @app.get("/arls")
+    def serve_arls():
         return FileResponse(f"{frontend_path}/index.html")
     
     @app.get("/reports")

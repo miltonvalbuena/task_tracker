@@ -9,7 +9,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlalchemy.orm import Session
 from app.database import SessionLocal, engine
-from app.models import Base, Company, User, UserRole
+from app.models import Base, Client, User, UserRole
 import hashlib
 
 def hash_password(password: str) -> str:
@@ -24,7 +24,7 @@ def init_system():
         print("🚀 Inicializando sistema parametrizable...")
         
         # Crear empresa principal (puede ser cualquier nombre)
-        main_company = Company(
+        main_company = Client(
             name="EMPRESA PRINCIPAL",
             description="Empresa principal del sistema - completamente configurable",
             is_active=True,
@@ -104,7 +104,7 @@ def init_system():
         )
         
         # Verificar si ya existe
-        existing_company = db.query(Company).filter(Company.name == main_company.name).first()
+        existing_company = db.query(Client).filter(Client.name == main_company.name).first()
         if not existing_company:
             db.add(main_company)
             db.commit()
@@ -168,7 +168,7 @@ def create_example_companies():
         print(f"\n🏢 Creando empresas de ejemplo...")
         
         # Empresa de ejemplo 1: ARL
-        arl_company = Company(
+        arl_company = Client(
             name="ARL EJEMPLO",
             description="Empresa ARL de ejemplo con campos específicos",
             is_active=True,
@@ -225,7 +225,7 @@ def create_example_companies():
         )
         
         # Empresa de ejemplo 2: Constructora
-        constructora_company = Company(
+        constructora_company = Client(
             name="CONSTRUCTORA EJEMPLO",
             description="Empresa constructora de ejemplo",
             is_active=True,
@@ -281,14 +281,14 @@ def create_example_companies():
         )
         
         # Verificar si ya existen
-        existing_arl = db.query(Company).filter(Company.name == arl_company.name).first()
+        existing_arl = db.query(Client).filter(Client.name == arl_company.name).first()
         if not existing_arl:
             db.add(arl_company)
             print(f"✅ Empresa ARL creada: {arl_company.name}")
         else:
             print(f"✅ Empresa ARL ya existe: {arl_company.name}")
         
-        existing_constructora = db.query(Company).filter(Company.name == constructora_company.name).first()
+        existing_constructora = db.query(Client).filter(Client.name == constructora_company.name).first()
         if not existing_constructora:
             db.add(constructora_company)
             print(f"✅ Empresa Constructora creada: {constructora_company.name}")

@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import { useAuth } from '../contexts/AuthContext';
-import { userService, companyService } from '../services/api';
+import { userService, clientService } from '../services/api';
 import toast from 'react-hot-toast';
 import { Plus, Edit, Trash2, User as UserIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { Badge, StatusBadge } from '../components/Badge';
+import FormSelect from '../components/FormSelect';
+import ActionButton from '../components/ActionButton';
+import LinkButton from '../components/LinkButton';
 
 function Users() {
   const { user } = useAuth();
@@ -18,7 +22,7 @@ function Users() {
     full_name: '',
     password: '',
     role: 'user',
-    company_id: user?.company_id || '',
+    client_id: user?.client_id || '',
   });
 
   const { data: users, isLoading } = useQuery(
@@ -29,9 +33,9 @@ function Users() {
     }
   );
 
-  const { data: companies } = useQuery(
-    'companies',
-    () => companyService.getAll(),
+  const { data: clients } = useQuery(
+    'clients',
+    () => clientService.getAll(),
     {
       enabled: user?.role === 'admin',
     }
@@ -46,7 +50,17 @@ function Users() {
         resetForm();
       },
       onError: (error) => {
-        toast.error(error.response?.data?.detail || 'Error al crear el usuario');
+        const errorData = error.response?.data;
+        if (errorData?.detail) {
+          if (Array.isArray(errorData.detail)) {
+            const errorMessages = errorData.detail.map(err => err.msg || err.message || 'Error de validación').join(', ');
+            toast.error(errorMessages);
+          } else {
+            toast.error(errorData.detail);
+          }
+        } else {
+          toast.error('Error al crear el usuario');
+        }
       },
     }
   );
@@ -60,7 +74,17 @@ function Users() {
         resetForm();
       },
       onError: (error) => {
-        toast.error(error.response?.data?.detail || 'Error al actualizar el usuario');
+        const errorData = error.response?.data;
+        if (errorData?.detail) {
+          if (Array.isArray(errorData.detail)) {
+            const errorMessages = errorData.detail.map(err => err.msg || err.message || 'Error de validación').join(', ');
+            toast.error(errorMessages);
+          } else {
+            toast.error(errorData.detail);
+          }
+        } else {
+          toast.error('Error al actualizar el usuario');
+        }
       },
     }
   );
@@ -85,7 +109,7 @@ function Users() {
       full_name: '',
       password: '',
       role: 'user',
-      company_id: user?.company_id || '',
+      client_id: user?.client_id || '',
     });
     setShowForm(false);
     setEditingUser(null);
@@ -99,7 +123,7 @@ function Users() {
       full_name: user.full_name,
       password: '',
       role: user.role,
-      company_id: user.company_id,
+      client_id: user.client_id,
     });
     setShowForm(true);
   };
@@ -122,7 +146,7 @@ function Users() {
     
     const submitData = {
       ...formData,
-      company_id: parseInt(formData.company_id),
+      client_id: parseInt(formData.client_id),
     };
 
     // No enviar password vacío en actualizaciones
@@ -137,13 +161,21 @@ function Users() {
     }
   };
 
-  const getRoleBadge = (role) => {
-    const roleMap = {
-      admin: 'badge-danger',
-      manager: 'badge-warning',
-      user: 'badge-secondary',
-    };
-    return `badge ${roleMap[role] || 'badge-secondary'}`;
+  const getRoleColor = (role) => {
+    switch (role) {
+      case 'admin':
+        return '#e74c3c'; // Rojo para admin
+      case 'manager':
+        return '#f39c12'; // Naranja para manager
+      case 'user':
+        return '#3498db'; // Azul para user
+      default:
+        return '#95a5a6'; // Gris por defecto
+    }
+  };
+
+  const getStatusColor = (isActive) => {
+    return isActive ? '#27ae60' : '#e74c3c'; // Verde para activo, rojo para inactivo
   };
 
   if (isLoading) {
@@ -154,13 +186,14 @@ function Users() {
     <div style={{ width: '100%', padding: '20px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
         <h1>Usuarios</h1>
-        <button 
+        <ActionButton
+          variant="primary"
+          size="medium"
           onClick={() => setShowForm(true)}
-          className="btn btn-primary"
+          icon={Plus}
         >
-          <Plus size={16} style={{ marginRight: '8px' }} />
           Nuevo Usuario
-        </button>
+        </ActionButton>
       </div>
 
       {showForm && (
@@ -223,58 +256,51 @@ function Users() {
                 />
               </div>
 
-              <div className="form-group">
-                <label className="form-label">Rol</label>
-                <select
-                  name="role"
-                  value={formData.role}
-                  onChange={handleChange}
-                  className="form-control"
-                >
-                  <option value="user">Usuario</option>
-                  <option value="manager">Manager</option>
-                  {user?.role === 'admin' && (
-                    <option value="admin">Administrador</option>
-                  )}
-                </select>
-              </div>
+              <FormSelect
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+                label="Rol"
+                required
+                options={[
+                  { value: 'user', label: 'Usuario' },
+                  { value: 'manager', label: 'Manager' },
+                  ...(user?.role === 'admin' ? [{ value: 'admin', label: 'Administrador' }] : [])
+                ]}
+              />
 
               {user?.role === 'admin' && (
-                <div className="form-group">
-                  <label className="form-label">Empresa *</label>
-                  <select
-                    name="company_id"
-                    value={formData.company_id}
-                    onChange={handleChange}
-                    className="form-control"
-                    required
-                  >
-                    <option value="">Seleccionar empresa</option>
-                    {Array.isArray(companies) && companies.map(company => (
-                      <option key={company.id} value={company.id}>
-                        {company.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <FormSelect
+                  name="client_id"
+                  value={formData.client_id}
+                  onChange={handleChange}
+                  label="Cliente"
+                  required
+                  placeholder="Seleccionar cliente"
+                  options={Array.isArray(clients) ? clients.map(client => ({
+                    value: client.id,
+                    label: client.name
+                  })) : []}
+                />
               )}
             </div>
 
             <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '16px' }}>
-              <button
+              <ActionButton
                 type="button"
+                variant="secondary"
                 onClick={resetForm}
-                className="btn btn-secondary"
               >
                 Cancelar
-              </button>
-              <button
+              </ActionButton>
+              <ActionButton
                 type="submit"
-                className="btn btn-primary"
+                variant="primary"
                 disabled={createMutation.isLoading || updateMutation.isLoading}
+                loading={createMutation.isLoading || updateMutation.isLoading}
               >
                 {editingUser ? 'Actualizar' : 'Crear'}
-              </button>
+              </ActionButton>
             </div>
           </form>
         </div>
@@ -316,35 +342,45 @@ function Users() {
                     </td>
                     <td>{userItem.email}</td>
                     <td>
-                      <span className={getRoleBadge(userItem.role)}>
+                      <Badge 
+                        backgroundColor={getRoleColor(userItem.role)}
+                        variant="status"
+                        size="small"
+                      >
                         {userItem.role.toUpperCase()}
-                      </span>
+                      </Badge>
                     </td>
-                    <td>{userItem.company.name}</td>
+                    <td>{userItem.client?.name || 'N/A'}</td>
                     <td>
-                      <span className={`badge ${userItem.is_active ? 'badge-success' : 'badge-danger'}`}>
+                      <Badge 
+                        backgroundColor={getStatusColor(userItem.is_active)}
+                        variant="status"
+                        size="small"
+                      >
                         {userItem.is_active ? 'ACTIVO' : 'INACTIVO'}
-                      </span>
+                      </Badge>
                     </td>
                     <td>
                       {format(new Date(userItem.created_at), 'dd/MM/yyyy', { locale: es })}
                     </td>
                     <td>
                       <div style={{ display: 'flex', gap: '8px' }}>
-                        <button
+                        <ActionButton
+                          variant="secondary"
+                          size="small"
                           onClick={() => handleEdit(userItem)}
-                          className="btn btn-secondary"
-                          style={{ padding: '4px 8px', fontSize: '12px' }}
+                          icon={Edit}
                         >
-                          <Edit size={14} />
-                        </button>
-                        <button
+                          Editar
+                        </ActionButton>
+                        <ActionButton
+                          variant="danger"
+                          size="small"
                           onClick={() => handleDelete(userItem.id)}
-                          className="btn btn-danger"
-                          style={{ padding: '4px 8px', fontSize: '12px' }}
+                          icon={Trash2}
                         >
-                          <Trash2 size={14} />
-                        </button>
+                          Eliminar
+                        </ActionButton>
                       </div>
                     </td>
                   </tr>

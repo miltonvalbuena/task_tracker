@@ -34,6 +34,7 @@ api.interceptors.response.use(
         window.location.href = '/login';
       }
     }
+    // Mantener la estructura del error para que los componentes puedan acceder a response.data
     return Promise.reject(error);
   }
 );
@@ -58,20 +59,29 @@ export const userService = {
   delete: (id) => api.delete(`/api/v1/users/${id}`),
 };
 
-// Servicios para empresas
-export const companyService = {
-  getAll: (params = {}) => api.get('/api/v1/companies/', { params }),
-  getById: (id) => api.get(`/api/v1/companies/${id}`),
-  create: (data) => api.post('/api/v1/companies/', data),
-  update: (id, data) => api.put(`/api/v1/companies/${id}`, data),
-  delete: (id) => api.delete(`/api/v1/companies/${id}`),
+// Servicios para clientes
+export const clientService = {
+  getAll: (params = {}) => api.get('/api/v1/clients/', { params }),
+  getById: (id) => api.get(`/api/v1/clients/${id}`),
+  create: (data) => api.post('/api/v1/clients/', data),
+  update: (id, data) => api.put(`/api/v1/clients/${id}`, data),
+  delete: (id) => api.delete(`/api/v1/clients/${id}`),
+};
+
+// Servicios para ARL
+export const arlService = {
+  getAll: () => api.get('/api/v1/arls'),
+  getById: (id) => api.get(`/api/v1/arls/${id}`),
+  create: (data) => api.post('/api/v1/arls', data),
+  update: (id, data) => api.put(`/api/v1/arls/${id}`, data),
+  delete: (id) => api.delete(`/api/v1/arls/${id}`),
 };
 
 // Servicios para dashboard
 export const dashboardService = {
-  getStats: (companyId) => api.get('/api/v1/dashboard/stats', { 
-    params: companyId ? { company_id: companyId } : {} 
+  getStats: (clientId) => api.get('/api/v1/dashboard/stats', { 
+    params: clientId ? { client_id: clientId } : {} 
   }),
-  getCompanyStats: () => api.get('/api/v1/dashboard/company-stats'),
+  getClientStats: () => api.get('/api/v1/dashboard/client-stats'),
   getUserTaskStats: (userId) => api.get(`/api/v1/dashboard/user-tasks/${userId}`),
 };

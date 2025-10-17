@@ -28,23 +28,42 @@ class FieldType(str, enum.Enum):
     SELECT = "select"
     TEXTAREA = "textarea"
 
-class Company(Base):
-    __tablename__ = "companies"
+class ARL(Base):
+    __tablename__ = "arls"
     
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100), unique=True, index=True, nullable=False)
+    name = Column(String(100), unique=True, index=True, nullable=False)  # COLMENA ARL, POSITIVA ARL, etc.
     description = Column(Text)
     is_active = Column(Boolean, default=True)
     
-    # Configuración de campos personalizados para esta empresa
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+    
+    # Relaciones
+    clients = relationship("Client", back_populates="arl")
+
+class Client(Base):
+    __tablename__ = "clients"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(200), nullable=False)  # Nombre de la empresa/cliente
+    nit = Column(String(20), nullable=True)  # NIT de la empresa
+    description = Column(Text)
+    is_active = Column(Boolean, default=True)
+    
+    # Foreign Key a ARL
+    arl_id = Column(Integer, ForeignKey("arls.id"), nullable=False)
+    
+    # Configuración de campos personalizados para este cliente
     custom_fields_config = Column(JSON, default=list)  # Lista de campos personalizados
     
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relaciones
-    users = relationship("User", back_populates="company")
-    tasks = relationship("Task", back_populates="company")
+    arl = relationship("ARL", back_populates="clients")
+    users = relationship("User", back_populates="client")
+    tasks = relationship("Task", back_populates="client")
 
 class User(Base):
     __tablename__ = "users"
@@ -56,12 +75,12 @@ class User(Base):
     hashed_password = Column(String(255), nullable=False)
     role = Column(Enum(UserRole), default=UserRole.USER)
     is_active = Column(Boolean, default=True)
-    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
+    client_id = Column(Integer, ForeignKey("clients.id"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relaciones
-    company = relationship("Company", back_populates="users")
+    client = relationship("Client", back_populates="users")
     assigned_tasks = relationship("Task", back_populates="assigned_user", foreign_keys="Task.assigned_to")
     created_tasks = relationship("Task", back_populates="created_by_user", foreign_keys="Task.created_by")
 
@@ -77,7 +96,7 @@ class Task(Base):
     completed_at = Column(DateTime(timezone=True))
     
     # Foreign Keys
-    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
+    client_id = Column(Integer, ForeignKey("clients.id"), nullable=False)
     assigned_to = Column(Integer, ForeignKey("users.id"))
     created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
     
@@ -89,6 +108,6 @@ class Task(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relaciones
-    company = relationship("Company", back_populates="tasks")
+    client = relationship("Client", back_populates="tasks")
     assigned_user = relationship("User", back_populates="assigned_tasks", foreign_keys=[assigned_to])
     created_by_user = relationship("User", back_populates="created_tasks", foreign_keys=[created_by])
