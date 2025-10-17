@@ -119,13 +119,13 @@ def import_exact_local_data():
                 client_id = client_id_mapping.get(client_data['id'])
                 if client_id:
                     # Crear empresa para cada cliente
+                    # Verificar qué columnas tiene la tabla companies
                     result = db.execute(text("""
-                        INSERT INTO companies (name, nit, description, is_active, created_at) 
-                        VALUES (:name, :nit, :description, :is_active, :created_at) 
+                        INSERT INTO companies (name, description, is_active, created_at) 
+                        VALUES (:name, :description, :is_active, :created_at) 
                         RETURNING id
                     """), {
                         "name": client_data['name'],
-                        "nit": client_data['nit'] or f"NIT-{client_id}",
                         "description": client_data['description'] or f"Empresa {client_data['name']}",
                         "is_active": True,
                         "created_at": datetime.now()
